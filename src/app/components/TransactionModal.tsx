@@ -9,7 +9,14 @@ interface TransactionModalProps {
   onClose: () => void;
 }
 
-export function TransactionModal({ form, categories, isEditing = false, onFormChange, onSubmit, onClose }: TransactionModalProps) {
+export function TransactionModal({
+  form,
+  categories,
+  isEditing = false,
+  onFormChange,
+  onSubmit,
+  onClose,
+}: TransactionModalProps) {
   return (
     <div
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -19,7 +26,7 @@ export function TransactionModal({ form, categories, isEditing = false, onFormCh
         {/* Header */}
         <div className="flex justify-between items-center mb-5">
           <div className="text-lg font-semibold font-['Playfair_Display',serif]">
-            {isEditing ? '✏️ Edit Transaksi' : 'Tambah Transaksi'}
+            {isEditing ? "✏️ Edit Transaksi" : "Tambah Transaksi"}
           </div>
           <button
             onClick={onClose}
@@ -52,10 +59,19 @@ export function TransactionModal({ form, categories, isEditing = false, onFormCh
         </div>
 
         {/* Form Fields */}
-        <div className="flex flex-col gap-2.5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!form.amount || !form.description.trim()) return;
+            onSubmit();
+          }}
+          className="flex flex-col gap-2.5"
+        >
           <input
             type="number"
             placeholder="Jumlah (Rp)"
+            required
+            min="1"
             value={form.amount}
             onChange={(e) => onFormChange((f) => ({ ...f, amount: e.target.value }))}
             className="border border-border rounded-[10px] py-3.5 px-4 text-base text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
@@ -63,14 +79,19 @@ export function TransactionModal({ form, categories, isEditing = false, onFormCh
           <input
             type="text"
             placeholder="Keterangan transaksi"
+            required
             value={form.description}
-            onChange={(e) => onFormChange((f) => ({ ...f, description: e.target.value }))}
+            onChange={(e) =>
+              onFormChange((f) => ({ ...f, description: e.target.value }))
+            }
             className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
           />
           <div className="grid grid-cols-2 gap-2">
             <select
               value={form.category_id}
-              onChange={(e) => onFormChange((f) => ({ ...f, category_id: e.target.value }))}
+              onChange={(e) =>
+                onFormChange((f) => ({ ...f, category_id: e.target.value }))
+              }
               className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
             >
               {categories.map((c) => (
@@ -81,22 +102,25 @@ export function TransactionModal({ form, categories, isEditing = false, onFormCh
             </select>
             <input
               type="date"
+              required
               value={form.date}
-              onChange={(e) => onFormChange((f) => ({ ...f, date: e.target.value }))}
+              onChange={(e) =>
+                onFormChange((f) => ({ ...f, date: e.target.value }))
+              }
               className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
             />
           </div>
           <button
-            onClick={onSubmit}
+            type="submit"
             className={`mt-1 py-3.5 text-[15px] font-semibold cursor-pointer border-none rounded-xl transition-colors ${
               isEditing
                 ? "bg-teal text-white hover:bg-teal/90"
                 : "bg-dark text-cream hover:bg-dark/90"
             }`}
           >
-            {isEditing ? 'Simpan Perubahan' : 'Simpan Transaksi'}
+            {isEditing ? "Simpan Perubahan" : "Simpan Transaksi"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

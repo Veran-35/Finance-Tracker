@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useTodos } from '@/app/hooks/useTodos';
-import { TodoItem } from '@/app/components/TodoItem';
-import { TodoModal } from '@/app/components/TodoModal';
+import { useState } from "react";
+import { useTodos } from "@/app/hooks/useTodos";
+import { TodoItem } from "@/app/components/TodoItem";
+import { TodoModal } from "@/app/components/TodoModal";
 
 export function TodoTab() {
   const todo = useTodos();
@@ -34,9 +34,13 @@ export function TodoTab() {
   };
 
   const filters = [
-    { key: 'all' as const, label: 'Semua', count: todo.stats.total },
-    { key: 'active' as const, label: 'Aktif', count: todo.stats.active },
-    { key: 'completed' as const, label: 'Selesai', count: todo.stats.completed },
+    { key: "all" as const, label: "Semua", count: todo.stats.total },
+    { key: "active" as const, label: "Aktif", count: todo.stats.active },
+    {
+      key: "completed" as const,
+      label: "Selesai",
+      count: todo.stats.completed,
+    },
   ];
 
   return (
@@ -44,11 +48,29 @@ export function TodoTab() {
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
         {[
-          { label: 'Total', value: todo.stats.total, icon: '📋', color: '#219EBC' },
-          { label: 'Aktif', value: todo.stats.active, icon: '⏳', color: '#F4A261' },
-          { label: 'Selesai', value: todo.stats.completed, icon: '✅', color: '#06D6A0' },
+          {
+            label: "Total",
+            value: todo.stats.total,
+            icon: "📋",
+            color: "#219EBC",
+          },
+          {
+            label: "Aktif",
+            value: todo.stats.active,
+            icon: "⏳",
+            color: "#F4A261",
+          },
+          {
+            label: "Selesai",
+            value: todo.stats.completed,
+            icon: "✅",
+            color: "#06D6A0",
+          },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-2xl py-4.5 px-5 border border-border flex items-center gap-3.5">
+          <div
+            key={stat.label}
+            className="bg-white rounded-2xl py-4.5 px-5 border border-border flex items-center gap-3.5"
+          >
             <div
               className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
               style={{ background: `${stat.color}12` }}
@@ -56,7 +78,9 @@ export function TodoTab() {
               {stat.icon}
             </div>
             <div>
-              <div className="text-[22px] font-bold text-dark leading-tight">{stat.value}</div>
+              <div className="text-[22px] font-bold text-dark leading-tight">
+                {stat.value}
+              </div>
               <div className="text-xs text-muted">{stat.label}</div>
             </div>
           </div>
@@ -64,7 +88,7 @@ export function TodoTab() {
       </div>
 
       {/* Filter Bar + Add Button */}
-      <div className="flex items-center justify-between mb-5 animate-[fadeInUp_0.5s_ease-out]">
+      <div className="flex items-center justify-between mb-5 animate-[fadeInUp_0.5s_ease-out]  max-md:flex-col">
         <div className="flex gap-1.5 bg-[#F0EDE8] rounded-[10px] p-1">
           {filters.map((f) => (
             <button
@@ -77,11 +101,13 @@ export function TodoTab() {
               }`}
             >
               {f.label}
-              <span className={`text-[11px] py-0.5 px-1.5 rounded-md font-bold ${
-                todo.filter === f.key
-                  ? "bg-accent/10 text-accent"
-                  : "bg-muted/10 text-muted-light"
-              }`}>
+              <span
+                className={`text-[11px] py-0.5 px-1.5 rounded-md font-bold ${
+                  todo.filter === f.key
+                    ? "bg-accent/10 text-accent"
+                    : "bg-muted/10 text-muted-light"
+                }`}
+              >
                 {f.count}
               </span>
             </button>
@@ -90,7 +116,7 @@ export function TodoTab() {
 
         <button
           onClick={handleOpenAdd}
-          className="bg-gradient-accent text-white border-none rounded-[10px] py-2.5 px-5 text-[13px] font-semibold cursor-pointer flex items-center gap-1.5 shadow-accent transition-all hover:shadow-accent-lg"
+          className="bg-gradient-accent text-white border-none rounded-[10px] py-2.5 px-5 text-[13px] font-semibold cursor-pointer flex items-center gap-1.5 shadow-accent transition-all hover:shadow-accent-lg max-md:mt-5"
         >
           <span className="text-base leading-none">+</span>
           Todo Baru
@@ -107,19 +133,23 @@ export function TodoTab() {
         ) : todo.todos.length === 0 ? (
           <div className="text-center py-15 bg-white rounded-2xl border border-border">
             <div className="text-5xl mb-4">
-              {todo.filter === 'completed' ? '🎉' : todo.filter === 'active' ? '✨' : '📝'}
+              {todo.filter === "completed"
+                ? "🎉"
+                : todo.filter === "active"
+                  ? "✨"
+                  : "📝"}
             </div>
             <h3 className="text-base font-semibold text-dark m-0 mb-2">
-              {todo.filter === 'completed'
-                ? 'Belum ada yang selesai'
-                : todo.filter === 'active'
-                ? 'Semua sudah selesai!'
-                : 'Belum ada todo'}
+              {todo.filter === "completed"
+                ? "Belum ada yang selesai"
+                : todo.filter === "active"
+                  ? "Semua sudah selesai!"
+                  : "Belum ada todo"}
             </h3>
             <p className="text-[13px] text-muted-light m-0">
-              {todo.filter === 'all'
+              {todo.filter === "all"
                 ? 'Klik "Todo Baru" untuk mulai membuat daftar tugas'
-                : 'Coba ganti filter untuk melihat todo lainnya'}
+                : "Coba ganti filter untuk melihat todo lainnya"}
             </p>
           </div>
         ) : (
@@ -139,7 +169,9 @@ export function TodoTab() {
       {todo.stats.total > 0 && (
         <div className="mt-6 p-4 px-5 bg-white rounded-[14px] border border-border animate-[fadeInUp_0.7s_ease-out]">
           <div className="flex justify-between items-center mb-2.5">
-            <span className="text-[13px] font-semibold text-dark">Progress</span>
+            <span className="text-[13px] font-semibold text-dark">
+              Progress
+            </span>
             <span className="text-[13px] font-bold text-green">
               {Math.round((todo.stats.completed / todo.stats.total) * 100)}%
             </span>
@@ -147,7 +179,9 @@ export function TodoTab() {
           <div className="h-2 bg-[#F0EDE8] rounded-[10px] overflow-hidden">
             <div
               className="h-full bg-gradient-teal rounded-[10px] transition-[width] duration-500 ease-in-out"
-              style={{ width: `${(todo.stats.completed / todo.stats.total) * 100}%` }}
+              style={{
+                width: `${(todo.stats.completed / todo.stats.total) * 100}%`,
+              }}
             />
           </div>
         </div>

@@ -18,17 +18,23 @@ export interface Category {
 
 export interface Budget {
   id: string;
-  title: string;
-  icon: string;
-  color: string;
+  category_id: string;
+  category_name: string;
+  category_icon: string;
+  category_color: string;
   limit: number;
+  spent: number;
+  period: string;
+  start_date: string;
+  end_date: string;
 }
 
 export interface BudgetFormData {
-  title: string;
-  icon: string;
-  color: string;
+  category_id: string;
   limit: string;
+  period: string;
+  start_date: string;
+  end_date: string;
 }
 
 export interface TransactionFormData {

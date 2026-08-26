@@ -1,21 +1,22 @@
-import { BudgetFormData } from '@/app/types';
+import { BudgetFormData, Category } from '@/app/types';
 
 interface BudgetModalProps {
   form: BudgetFormData;
+  categories: Category[];
   onFormChange: (form: BudgetFormData) => void;
   onSubmit: () => void;
   onClose: () => void;
   isEditing: boolean;
-  iconOptions: string[];
-  colorOptions: string[];
 }
 
-export function BudgetModal({ form, onFormChange, onSubmit, onClose, isEditing, iconOptions, colorOptions }: BudgetModalProps) {
+export function BudgetModal({ form, categories, onFormChange, onSubmit, onClose, isEditing }: BudgetModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.limit) return;
+    if (!form.category_id || !form.limit) return;
     onSubmit();
   };
+
+  const selectedCat = categories.find(c => c.id === form.category_id);
 
   const formatPreview = (val: string) => {
     if (!val) return 'Rp 0';
@@ -44,16 +45,16 @@ export function BudgetModal({ form, onFormChange, onSubmit, onClose, isEditing, 
         {/* Preview Card */}
         <div
           className="mx-6 mt-5 p-4 rounded-[14px] flex items-center gap-3 border-[1.5px]"
-          style={{ background: `${form.color}08`, borderColor: `${form.color}30` }}
+          style={{ background: `${selectedCat?.color || '#aaa'}08`, borderColor: `${selectedCat?.color || '#aaa'}30` }}
         >
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
-            style={{ background: `${form.color}20` }}
+            style={{ background: `${selectedCat?.color || '#aaa'}20` }}
           >
-            {form.icon}
+            {selectedCat?.icon || '📦'}
           </div>
           <div>
-            <div className="text-[15px] font-semibold text-dark">{form.title || 'Nama Kategori'}</div>
+            <div className="text-[15px] font-semibold text-dark">{selectedCat?.name || 'Pilih Kategori'}</div>
             <div className="text-xs text-muted-light">Batas: {formatPreview(form.limit)} / bulan</div>
           </div>
         </div>
@@ -61,22 +62,25 @@ export function BudgetModal({ form, onFormChange, onSubmit, onClose, isEditing, 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="flex flex-col gap-4.5">
-            {/* Title */}
+            {/* Category */}
             <div>
-              <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">NAMA KATEGORI *</label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => onFormChange({ ...form, title: e.target.value })}
-                placeholder="Contoh: Makanan, Transportasi, Hiburan"
-                autoFocus
-                className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-lighter"
-              />
+              <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">KATEGORI *</label>
+              <select
+                value={form.category_id}
+                onChange={(e) => onFormChange({ ...form, category_id: e.target.value })}
+                className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+              >
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.icon} {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Monthly Limit */}
             <div>
-              <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">BATAS BULANAN (Rp) *</label>
+              <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">BATAS BUDGET (Rp) *</label>
               <input
                 type="number"
                 value={form.limit}
@@ -87,45 +91,39 @@ export function BudgetModal({ form, onFormChange, onSubmit, onClose, isEditing, 
               />
             </div>
 
-            {/* Icon Picker */}
+            {/* Period */}
             <div>
-              <label className="block text-xs font-semibold text-[#6B6560] mb-2 tracking-[0.04em]">IKON</label>
-              <div className="flex flex-wrap gap-1.5">
-                {iconOptions.map((icon) => (
-                  <button
-                    key={icon}
-                    type="button"
-                    onClick={() => onFormChange({ ...form, icon })}
-                    className="w-10 h-10 rounded-[10px] cursor-pointer text-lg flex items-center justify-center transition-all duration-150"
-                    style={{
-                      border: form.icon === icon ? `2px solid ${form.color}` : '1.5px solid #E5E0D8',
-                      background: form.icon === icon ? `${form.color}12` : '#fff',
-                    }}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
+              <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">PERIODE</label>
+              <select
+                value={form.period}
+                onChange={(e) => onFormChange({ ...form, period: e.target.value })}
+                className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+              >
+                <option value="weekly">Mingguan</option>
+                <option value="monthly">Bulanan</option>
+                <option value="yearly">Tahunan</option>
+              </select>
             </div>
 
-            {/* Color Picker */}
-            <div>
-              <label className="block text-xs font-semibold text-[#6B6560] mb-2 tracking-[0.04em]">WARNA</label>
-              <div className="flex flex-wrap gap-1.5">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => onFormChange({ ...form, color })}
-                    className="w-8 h-8 rounded-lg cursor-pointer transition-all duration-150"
-                    style={{
-                      background: color,
-                      border: form.color === color ? '3px solid #2C2825' : '2px solid transparent',
-                      outline: form.color === color ? '2px solid #fff' : 'none',
-                      outlineOffset: -4,
-                    }}
-                  />
-                ))}
+            {/* Date Range */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">MULAI</label>
+                <input
+                  type="date"
+                  value={form.start_date}
+                  onChange={(e) => onFormChange({ ...form, start_date: e.target.value })}
+                  className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">SELESAI</label>
+                <input
+                  type="date"
+                  value={form.end_date}
+                  onChange={(e) => onFormChange({ ...form, end_date: e.target.value })}
+                  className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+                />
               </div>
             </div>
           </div>

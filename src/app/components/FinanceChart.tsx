@@ -16,64 +16,47 @@ import { fmt } from '@/app/utils/format';
 
 interface FinanceChartProps {
   transactions: Transaction[];
+  className?: string;
 }
 
-export function FinanceChart({ transactions }: FinanceChartProps) {
+export function FinanceChart({ transactions, className = '' }: FinanceChartProps) {
   const chartData = useMemo(() => {
-    // Group transactions by month
-    const monthMap: Record<string, { income: number; expense: number }> = {};
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    // Initialize all 12 months with 0
+    const monthlyStats = monthNames.map((name) => ({
+      name,
+      Pemasukan: 0,
+      Pengeluaran: 0,
+    }));
 
     transactions.forEach((t) => {
+      if (!t.date) return;
       const date = new Date(t.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthIdx = date.getMonth(); // 0 (Jan) - 11 (Des)
 
-      if (!monthMap[key]) {
-        monthMap[key] = { income: 0, expense: 0 };
-      }
-
-      if (t.type === 'income') {
-        monthMap[key].income += t.amount;
-      } else {
-        monthMap[key].expense += t.amount;
+      if (monthIdx >= 0 && monthIdx < 12) {
+        if (t.type === 'income') {
+          monthlyStats[monthIdx].Pemasukan += t.amount;
+        } else if (t.type === 'expense') {
+          monthlyStats[monthIdx].Pengeluaran += t.amount;
+        }
       }
     });
 
-    // Sort by month and format labels
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
-    return Object.entries(monthMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, val]) => {
-        const [, month] = key.split('-');
-        return {
-          name: monthNames[parseInt(month) - 1],
-          Pemasukan: val.income,
-          Pengeluaran: val.expense,
-        };
-      });
+    return monthlyStats;
   }, [transactions]);
 
-  if (chartData.length === 0) {
-    return (
-      <div className="bg-white border border-border rounded-2xl p-5.5 mb-5">
-        <div className="text-[13px] font-semibold text-dark mb-4">Grafik Keuangan</div>
-        <div className="text-center py-10 text-muted text-sm">
-          Belum ada data transaksi untuk ditampilkan
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white border border-border rounded-2xl p-5.5 mb-5">
-      <div className="text-[13px] font-semibold text-dark mb-4">Grafik Keuangan</div>
-      <div style={{ width: '100%', height: 280 }}>
+    <div className={`bg-white border border-border rounded-2xl p-5.5 flex flex-col justify-between ${className}`}>
+      <div className="text-[13px] font-semibold text-dark mb-4">Grafik Keuangan (Tahunan)</div>
+      <div className="w-full flex-1 min-h-[260px]" style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 15, left: -5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 12, fill: '#8A8580' }}
+              tick={{ fontSize: 11, fill: '#8A8580' }}
               axisLine={{ stroke: '#E8E4DF' }}
               tickLine={false}
             />
@@ -82,6 +65,7 @@ export function FinanceChart({ transactions }: FinanceChartProps) {
               axisLine={false}
               tickLine={false}
               tickFormatter={(v: number) => {
+                if (v >= 1000000000) return `${(v / 1000000000).toFixed(0)}M`;
                 if (v >= 1000000) return `${(v / 1000000).toFixed(0)}jt`;
                 if (v >= 1000) return `${(v / 1000).toFixed(0)}rb`;
                 return String(v);
@@ -97,8 +81,8 @@ export function FinanceChart({ transactions }: FinanceChartProps) {
                 boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
               }}
               itemStyle={{ color: '#F5F0EB' }}
-              labelStyle={{ color: '#8A8580', fontSize: 11, marginBottom: 4 }}
-              formatter={(value) => [fmt(Number(value) || 0), '']}
+              labelStyle={{ color: '#E8E4DF', fontWeight: 600, fontSize: 12, marginBottom: 4 }}
+              formatter={(value, name) => [fmt(Number(value) || 0), String(name)]}
             />
             <Legend
               iconType="circle"

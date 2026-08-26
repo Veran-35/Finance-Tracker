@@ -3,14 +3,13 @@ import { fmt, fmtShort } from "@/app/utils/format";
 
 interface BudgetCardProps {
   budget: Budget;
-  spent: number;
   onEdit: (budget: Budget) => void;
   onDelete: (id: string) => void;
 }
 
-export function BudgetCard({ budget: b, spent, onEdit, onDelete }: BudgetCardProps) {
-  const pct = b.limit > 0 ? Math.min((spent / b.limit) * 100, 100) : 0;
-  const over = spent > b.limit;
+export function BudgetCard({ budget: b, onEdit, onDelete }: BudgetCardProps) {
+  const pct = b.limit > 0 ? Math.min((b.spent / b.limit) * 100, 100) : 0;
+  const over = b.spent > b.limit;
 
   return (
     <div
@@ -22,20 +21,20 @@ export function BudgetCard({ budget: b, spent, onEdit, onDelete }: BudgetCardPro
         <div className="flex items-center gap-3">
           <div
             className="w-[42px] h-[42px] rounded-[11px] flex items-center justify-center text-xl"
-            style={{ background: b.color + "20" }}
+            style={{ background: b.category_color + "20" }}
           >
-            {b.icon}
+            {b.category_icon}
           </div>
           <div>
-            <div className="text-[15px] font-semibold text-dark">{b.title}</div>
+            <div className="text-[15px] font-semibold text-dark">{b.category_name}</div>
             <div className="text-xs text-muted-light">Budget {fmt(b.limit)}</div>
           </div>
         </div>
         <div className="flex items-center gap-2.5">
           <div className="text-right">
-            <div className={`text-base font-semibold ${over ? "text-accent" : "text-dark"}`}>{fmt(spent)}</div>
+            <div className={`text-base font-semibold ${over ? "text-accent" : "text-dark"}`}>{fmt(b.spent)}</div>
             <div className={`text-[11px] ${over ? "text-accent" : "text-muted-light"}`}>
-              {over ? `Lebih ${fmt(spent - b.limit)}` : `Sisa ${fmt(b.limit - spent)}`}
+              {over ? `Lebih ${fmt(b.spent - b.limit)}` : `Sisa ${fmt(b.limit - b.spent)}`}
             </div>
           </div>
           <div className="flex gap-1">
@@ -61,7 +60,7 @@ export function BudgetCard({ budget: b, spent, onEdit, onDelete }: BudgetCardPro
           className="h-full rounded-full transition-[width] duration-600 ease-in-out"
           style={{
             width: `${pct}%`,
-            background: over ? "#E76F51" : b.color,
+            background: over ? "#E76F51" : b.category_color,
           }}
         />
       </div>

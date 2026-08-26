@@ -56,9 +56,9 @@ export default function FinancialTracker() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <Header activeTab={nav.activeTab} />
+        <Header activeTab={nav.activeTab} onOpenSidebar={() => nav.setSidebarOpen(true)} />
 
-        <main className="py-7 px-8 max-w-[1100px] w-full mx-auto">
+        <main className="py-7 px-8 max-w-[1100px] w-full mx-auto max-lg:px-4 max-lg:py-4">
           {nav.activeTab === "overview" && (
             <OverviewTab
               balance={txn.balance}

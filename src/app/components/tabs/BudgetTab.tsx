@@ -41,7 +41,7 @@ export function BudgetTab({ budget }: BudgetTabProps) {
   return (
     <div>
       {/* Header Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
+      <div className="grid grid-cols-3 gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
         <div className="bg-white rounded-2xl py-4.5 px-5 border border-border flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-xl">🎯</div>
           <div>
@@ -53,7 +53,14 @@ export function BudgetTab({ budget }: BudgetTabProps) {
           <div className="w-11 h-11 rounded-xl bg-teal/10 flex items-center justify-center text-xl">💵</div>
           <div>
             <div className="text-[22px] font-bold text-dark leading-tight">{fmt(budget.totalBudget)}</div>
-            <div className="text-xs text-muted">Total Batas Bulanan</div>
+            <div className="text-xs text-muted">Total Batas</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl py-4.5 px-5 border border-border flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-xl">🔥</div>
+          <div>
+            <div className="text-[22px] font-bold text-dark leading-tight">{fmt(budget.totalSpent)}</div>
+            <div className="text-xs text-muted">Total Terpakai</div>
           </div>
         </div>
       </div>
@@ -61,7 +68,7 @@ export function BudgetTab({ budget }: BudgetTabProps) {
       {/* Section Header + Add */}
       <div className="flex items-center justify-between mb-4 animate-[fadeInUp_0.5s_ease-out]">
         <div className="text-[13px] font-semibold text-muted uppercase tracking-[0.06em]">
-          Monitoring Budget Bulanan
+          Monitoring Budget
         </div>
         <button
           onClick={handleOpenAdd}
@@ -79,7 +86,7 @@ export function BudgetTab({ budget }: BudgetTabProps) {
             <div className="text-5xl mb-4">🎯</div>
             <h3 className="text-base font-semibold text-dark m-0 mb-2">Belum ada budget</h3>
             <p className="text-[13px] text-muted-light m-0 mb-5">
-              Buat kategori budget untuk memantau pengeluaran bulananmu
+              Buat budget per kategori untuk memantau pengeluaranmu
             </p>
             <button
               onClick={handleOpenAdd}
@@ -93,7 +100,6 @@ export function BudgetTab({ budget }: BudgetTabProps) {
             <BudgetCard
               key={b.id}
               budget={b}
-              spent={0}
               onEdit={handleEdit}
               onDelete={budget.deleteBudget}
             />
@@ -105,12 +111,11 @@ export function BudgetTab({ budget }: BudgetTabProps) {
       {showModal && (
         <BudgetModal
           form={budget.form}
+          categories={budget.categories}
           onFormChange={budget.setForm}
           onSubmit={handleSubmit}
           onClose={handleClose}
           isEditing={!!budget.editingId}
-          iconOptions={budget.ICON_OPTIONS}
-          colorOptions={budget.COLOR_OPTIONS}
         />
       )}
     </div>
