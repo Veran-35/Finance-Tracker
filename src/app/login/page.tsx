@@ -72,10 +72,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-cream">
-      <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet"
-      />
 
       {/* Left Panel - Branding */}
       <div className="flex-1 bg-dark flex flex-col items-center justify-center relative overflow-hidden p-12 max-lg:hidden">
@@ -92,7 +88,7 @@ export default function LoginPage() {
           <div className="w-20 h-20 rounded-[22px] bg-gradient-accent flex items-center justify-center text-[40px] mx-auto mb-7 shadow-[0_12px_40px_rgba(231,111,81,0.35)]">
             💰
           </div>
-          <h1 className="text-4xl font-bold font-['Playfair_Display',serif] text-cream m-0 mb-3 leading-tight">
+          <h1 className="text-4xl font-bold font-display text-cream m-0 mb-3 leading-tight">
             FinTrack
           </h1>
           <p className="text-base text-muted-light m-0 mb-10 leading-relaxed">
@@ -121,7 +117,7 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px] animate-[fadeInUp_0.6s_ease-out]">
           {/* Header */}
           <div className="mb-9">
-            <h2 className="text-[28px] font-bold font-['Playfair_Display',serif] text-dark m-0 mb-2">
+            <h2 className="text-[28px] font-bold font-display text-dark m-0 mb-2">
               {mode === 'login' ? 'Selamat Datang!' : 'Buat Akun Baru'}
             </h2>
             <p className="text-sm text-muted m-0">

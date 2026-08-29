@@ -46,6 +46,8 @@ export function useTodos() {
   }, [user]);
 
   useEffect(() => {
+    // Fetch data awal saat mount; setState terjadi setelah await, bukan cascade derived-state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTodos();
   }, [fetchTodos]);
 

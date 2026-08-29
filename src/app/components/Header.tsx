@@ -31,7 +31,7 @@ export function Header({ activeTab, onOpenSidebar }: HeaderProps) {
           <div className="text-[11px] font-medium text-muted-light tracking-[0.08em] uppercase">
             {NAV_ITEMS.find((n) => n.id === activeTab)?.label}
           </div>
-          <div className="text-[22px] font-semibold font-['Playfair_Display',serif] text-dark leading-tight max-lg:text-lg">
+          <div className="text-[22px] font-semibold font-display text-dark leading-tight max-lg:text-lg">
             Financial Tracker
           </div>
         </div>

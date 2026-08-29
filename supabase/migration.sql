@@ -269,6 +269,16 @@ create trigger study_session_completed
   when (old.status = 'in_progress' and new.status = 'completed')
   execute procedure public.update_subject_total();
 
+-- Trigger yang sama untuk sesi yang langsung di-insert dengan status
+-- 'completed' (aplikasi menyimpan sesi sekaligus dengan status akhir)
+create trigger study_session_inserted
+  after insert on public.study_sessions
+  for each row
+  when (new.status = 'completed'
+     and new.subject_id is not null
+     and new.duration_seconds is not null)
+  execute procedure public.update_subject_total();
+
 -- 3c. View: statistik belajar per user
 create or replace view public.study_stats as
 select

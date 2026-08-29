@@ -13,12 +13,19 @@ const DEFAULT_FORM: TransactionFormData = {
   date: new Date().toISOString().slice(0, 10),
 };
 
+const PAGE_SIZE = 10;
+
 export function useTransactions() {
   const { user } = useAuth();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(1);
   const [form, setForm] = useState<TransactionFormData>({ ...DEFAULT_FORM });
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -85,6 +92,8 @@ export function useTransactions() {
   }, [user]);
 
   useEffect(() => {
+    // Fetch data awal saat mount; setState terjadi setelah await, bukan cascade derived-state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategories();
     fetchTransactions();
   }, [fetchCategories, fetchTransactions]);
@@ -124,10 +133,65 @@ export function useTransactions() {
   }, [transactions, categories]);
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return transactions
       .filter((t) => filterType === 'all' || t.type === filterType)
+      .filter((t) => filterCategory === 'all' || t.category_id === filterCategory)
+      .filter((t) => {
+        if (!q) return true;
+        if (t.description.toLowerCase().includes(q)) return true;
+        const catName = categories.find((c) => c.id === t.category_id)?.name;
+        return !!catName && catName.toLowerCase().includes(q);
+      })
+      .filter((t) => (!dateFrom || t.date >= dateFrom) && (!dateTo || t.date <= dateTo))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, filterType]);
+  }, [transactions, filterType, filterCategory, search, categories, dateFrom, dateTo]);
+
+  // ─── Pagination ────────────────────────────────────────────────────
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const hasActiveFilters =
+    filterType !== 'all' ||
+    search.trim() !== '' ||
+    filterCategory !== 'all' ||
+    dateFrom !== '' ||
+    dateTo !== '';
+
+  // Setiap perubahan filter kembali ke halaman 1
+  const applyFilterType = (value: string) => {
+    setFilterType(value);
+    setPage(1);
+  };
+  const applySearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+  const applyFilterCategory = (value: string) => {
+    setFilterCategory(value);
+    setPage(1);
+  };
+  const applyDateFrom = (value: string) => {
+    setDateFrom(value);
+    setPage(1);
+  };
+  const applyDateTo = (value: string) => {
+    setDateTo(value);
+    setPage(1);
+  };
+
+  const resetFilters = () => {
+    setFilterType('all');
+    setSearch('');
+    setFilterCategory('all');
+    setDateFrom('');
+    setDateTo('');
+    setPage(1);
+  };
 
   // ─── Add Transaction ───────────────────────────────────────────────
   async function addTransaction() {
@@ -274,8 +338,22 @@ export function useTransactions() {
     balance,
     expenseByCategory,
     filtered,
+    paginated,
+    currentPage,
+    totalPages,
     filterType,
-    setFilterType,
+    setFilterType: applyFilterType,
+    search,
+    setSearch: applySearch,
+    filterCategory,
+    setFilterCategory: applyFilterCategory,
+    dateFrom,
+    setDateFrom: applyDateFrom,
+    dateTo,
+    setDateTo: applyDateTo,
+    setPage,
+    resetFilters,
+    hasActiveFilters,
     form,
     setForm,
     editingId,

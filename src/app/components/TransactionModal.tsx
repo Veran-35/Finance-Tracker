@@ -25,7 +25,7 @@ export function TransactionModal({
       <div className="bg-cream rounded-2xl p-6 w-full max-w-[480px] mx-5 shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-[slideUp_0.3s_ease-out]">
         {/* Header */}
         <div className="flex justify-between items-center mb-5">
-          <div className="text-lg font-semibold font-['Playfair_Display',serif]">
+          <div className="text-lg font-semibold font-display">
             {isEditing ? "✏️ Edit Transaksi" : "Tambah Transaksi"}
           </div>
           <button

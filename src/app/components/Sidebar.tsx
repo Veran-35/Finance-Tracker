@@ -9,7 +9,6 @@ interface SidebarProps {
   totalExpense: number;
   onTabChange: (tab: string) => void;
   onToggleSidebar: () => void;
-  onAddNew?: () => void;
 }
 
 export function Sidebar({
@@ -20,7 +19,6 @@ export function Sidebar({
   totalExpense,
   onTabChange,
   onToggleSidebar,
-  onAddNew,
 }: SidebarProps) {
   return (
     <>
@@ -75,7 +73,7 @@ export function Sidebar({
           </div>
           {sidebarOpen && (
             <div className="overflow-hidden whitespace-nowrap">
-              <div className="text-[17px] font-semibold font-['Playfair_Display',serif] leading-tight">
+              <div className="text-[17px] font-semibold font-display leading-tight">
                 FinTrack
               </div>
               <div className="text-[11px] text-muted-light tracking-wide">

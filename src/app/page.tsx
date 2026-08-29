@@ -9,14 +9,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cream gap-4">
-      <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600&display=swap"
-        rel="stylesheet"
-      />
       <div className="w-16 h-16 rounded-[18px] bg-gradient-accent flex items-center justify-center text-[32px] shadow-accent-lg">
         💰
       </div>
-      <h1 className="text-[28px] font-semibold font-['Playfair_Display',serif] text-dark m-0">
+      <h1 className="text-[28px] font-semibold font-display text-dark m-0">
         FinTrack
       </h1>
       <p className="text-sm text-muted m-0">

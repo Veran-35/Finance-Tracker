@@ -42,8 +42,8 @@ export function useBudgets() {
 
     if (data) {
       setCategories(data);
-      if (data.length > 0 && !form.category_id) {
-        setForm(f => ({ ...f, category_id: data[0].id }));
+      if (data.length > 0) {
+        setForm(f => (f.category_id ? f : { ...f, category_id: data[0].id }));
       }
     }
   }, [user]);
@@ -78,6 +78,8 @@ export function useBudgets() {
   }, [user]);
 
   useEffect(() => {
+    // Fetch data awal saat mount; setState terjadi setelah await, bukan cascade derived-state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategories();
     fetchBudgets();
   }, [fetchCategories, fetchBudgets]);

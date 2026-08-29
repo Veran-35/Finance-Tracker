@@ -9,6 +9,7 @@ import { OverviewTab } from "@/app/components/tabs/OverviewTab";
 import { TransactionsTab } from "@/app/components/tabs/TransactionsTab";
 import { BudgetTab } from "@/app/components/tabs/BudgetTab";
 import { TodoTab } from "@/app/components/tabs/TodoTab";
+import { StudyTimerTab } from "@/app/components/tabs/StudyTimerTab";
 import { TransactionModal } from "@/app/components/TransactionModal";
 import { useTransactions } from "@/app/hooks/useTransactions";
 import { useNavigation } from "@/app/hooks/useNavigation";
@@ -42,7 +43,6 @@ export default function FinancialTracker() {
 
   return (
     <div className="bg-cream min-h-screen text-dark flex">
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
 
       <Sidebar
         activeTab={nav.activeTab}
@@ -52,7 +52,6 @@ export default function FinancialTracker() {
         totalExpense={txn.totalExpense}
         onTabChange={nav.setActiveTab}
         onToggleSidebar={() => nav.setSidebarOpen(!nav.sidebarOpen)}
-        onAddNew={() => nav.setShowModal(true)}
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
@@ -72,15 +71,11 @@ export default function FinancialTracker() {
 
           {nav.activeTab === "transaksi" && (
             <TransactionsTab
-              filtered={txn.filtered}
-              categories={txn.categories}
-              filterType={txn.filterType}
-              onFilterChange={txn.setFilterType}
+              txn={txn}
               onEdit={(transaction) => {
                 txn.startEdit(transaction);
                 nav.setShowModal(true);
               }}
-              onDelete={txn.deleteTransaction}
               onAddNew={() => {
                 txn.cancelEdit();
                 nav.setShowModal(true);
@@ -94,6 +89,10 @@ export default function FinancialTracker() {
 
           {nav.activeTab === "todos" && (
             <TodoTab />
+          )}
+
+          {nav.activeTab === "study" && (
+            <StudyTimerTab />
           )}
         </main>
       </div>
