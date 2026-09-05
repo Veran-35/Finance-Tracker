@@ -41,6 +41,7 @@ export interface TransactionFormData {
   type: string;
   amount: string;
   category_id: string;
+  custom_category: string;
   description: string;
   date: string;
 }

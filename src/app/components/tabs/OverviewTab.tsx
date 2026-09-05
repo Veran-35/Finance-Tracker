@@ -4,12 +4,15 @@ import DonutChart from "@/app/components/DonutChart";
 import { MiniBar } from "@/app/components/MiniBar";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { FinanceChart } from "@/app/components/FinanceChart";
-import { fmtShort } from "@/app/utils/format";
+import { MonthlyChart } from "@/app/components/MonthlyChart";
+import { fmt, fmtShort } from "@/app/utils/format";
 
 interface OverviewTabProps {
   balance: number;
-  totalIncome: number;
   totalExpense: number;
+  monthIncome: number;
+  monthExpense: number;
+  topExpenses: Transaction[];
   expenseByCategory: ExpenseByCategory[];
   transactions: Transaction[];
   categories: Category[];
@@ -17,8 +20,10 @@ interface OverviewTabProps {
 
 export function OverviewTab({
   balance,
-  totalIncome,
   totalExpense,
+  monthIncome,
+  monthExpense,
+  topExpenses,
   expenseByCategory,
   transactions,
   categories,
@@ -37,16 +42,16 @@ export function OverviewTab({
       statusText: balance >= 0 ? "Keuangan sehat ✓" : "Perlu perhatian",
     },
     {
-      label: "Pemasukan",
-      value: totalIncome,
+      label: "Pemasukan Bulan Ini",
+      value: monthIncome,
       color: "#219EBC",
       icon: "📈",
       bg: "#fff",
       isGradient: false,
     },
     {
-      label: "Pengeluaran",
-      value: totalExpense,
+      label: "Pengeluaran Bulan Ini",
+      value: monthExpense,
       color: "#E76F51",
       icon: "📉",
       bg: "#fff",
@@ -112,18 +117,78 @@ export function OverviewTab({
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="text-[13px] font-semibold text-muted mb-2.5 uppercase tracking-[0.06em]">
-        Transaksi terbaru
+      {/* Grafik Bulanan (harian, full width) */}
+      <MonthlyChart transactions={transactions} className="mb-6" />
+
+      {/* Pengeluaran Terbesar (kiri) + Transaksi Terbaru (kanan) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div>
+          <div className="text-[13px] font-semibold text-muted mb-2.5 uppercase tracking-[0.06em]">
+            Pengeluaran terbesar
+          </div>
+          {topExpenses.map((t) => {
+            const cat = categories.find((c) => c.id === t.category_id);
+            const color = cat?.color || "#aaa";
+            return (
+              <div
+                key={t.id}
+                className="bg-white border border-border rounded-xl p-3 px-4 mb-2"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-[38px] h-[38px] rounded-[10px] text-lg flex items-center justify-center shrink-0"
+                    style={{ background: color + "20" }}
+                  >
+                    {cat?.icon || "📦"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-dark truncate">
+                      {t.description}
+                    </div>
+                    <div className="text-xs text-muted-light">
+                      {cat?.name || "Lainnya"} · {t.date}
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-accent shrink-0">
+                    {fmt(t.amount)}
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <MiniBar
+                    value={t.amount}
+                    max={topExpenses[0].amount}
+                    color={color}
+                  />
+                </div>
+              </div>
+            );
+          })}
+          {topExpenses.length === 0 && (
+            <div className="bg-white border border-border rounded-xl p-3 px-4 text-xs text-muted-light">
+              Belum ada pengeluaran
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="text-[13px] font-semibold text-muted mb-2.5 uppercase tracking-[0.06em]">
+            Transaksi terbaru
+          </div>
+          {recentTransactions.map((t) => (
+            <TransactionItem
+              key={t.id}
+              transaction={t}
+              categories={categories}
+              variant="compact"
+            />
+          ))}
+          {recentTransactions.length === 0 && (
+            <div className="bg-white border border-border rounded-xl p-3 px-4 text-xs text-muted-light">
+              Belum ada transaksi
+            </div>
+          )}
+        </div>
       </div>
-      {recentTransactions.map((t) => (
-        <TransactionItem
-          key={t.id}
-          transaction={t}
-          categories={categories}
-          variant="compact"
-        />
-      ))}
     </div>
   );
 }

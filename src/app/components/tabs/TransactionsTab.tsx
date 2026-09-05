@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Transaction } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
+import { CategoryModal } from "@/app/components/CategoryModal";
 import { UseTransactionsReturn } from "@/app/hooks/useTransactions";
 
 interface TransactionsTabProps {
@@ -9,6 +11,8 @@ interface TransactionsTabProps {
 }
 
 export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps) {
+  const [showCategories, setShowCategories] = useState(false);
+
   const filters = [
     { key: "all", label: "Semua" },
     { key: "income", label: "Pemasukan" },
@@ -71,6 +75,12 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
             </option>
           ))}
         </select>
+        <button
+          onClick={() => setShowCategories(true)}
+          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
+        >
+          ⚙ Kelola
+        </button>
         <input
           type="date"
           value={txn.dateFrom}
@@ -150,6 +160,15 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
             Berikutnya ›
           </button>
         </div>
+      )}
+
+      {showCategories && (
+        <CategoryModal
+          categories={txn.categories}
+          transactions={txn.transactions}
+          onDelete={txn.deleteCategory}
+          onClose={() => setShowCategories(false)}
+        />
       )}
     </div>
   );

@@ -61,8 +61,10 @@ export default function FinancialTracker() {
           {nav.activeTab === "overview" && (
             <OverviewTab
               balance={txn.balance}
-              totalIncome={txn.totalIncome}
               totalExpense={txn.totalExpense}
+              monthIncome={txn.monthIncome}
+              monthExpense={txn.monthExpense}
+              topExpenses={txn.topExpenses}
               expenseByCategory={txn.expenseByCategory}
               transactions={txn.transactions}
               categories={txn.categories}
@@ -103,11 +105,11 @@ export default function FinancialTracker() {
           categories={txn.categories}
           isEditing={!!txn.editingId}
           onFormChange={txn.setForm}
-          onSubmit={() => {
+          onSubmit={(rows) => {
             if (txn.editingId) {
               txn.updateTransaction();
             } else {
-              txn.addTransaction();
+              txn.addTransactions(rows);
             }
             nav.setShowModal(false);
           }}
