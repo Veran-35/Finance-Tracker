@@ -81,7 +81,54 @@ export function useStudyStats() {
     refreshStats();
   }, [refreshStats]);
 
-  return { stats, todaySeconds, recentSessions, loading, refreshStats };
+  const deleteSession = async (id: string) => {
+    const session = recentSessions.find((s) => s.id === id);
+
+    try {
+      const { error } = await supabase
+        .from('study_sessions')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Gagal menghapus sesi belajar:', error.message);
+        return;
+      }
+
+      // Trigger hanya menambah total_seconds subject; kurangi manual agar tidak menggelembung.
+      if (session?.subject_id) {
+        const { data: subject, error: readError } = await supabase
+          .from('subjects')
+          .select('total_seconds')
+          .eq('id', session.subject_id)
+          .maybeSingle();
+
+        if (readError) {
+          console.error('Gagal memuat total detik mata pelajaran:', readError.message);
+        } else if (subject) {
+          const { error: updateError } = await supabase
+            .from('subjects')
+            .update({
+              total_seconds: Math.max(
+                0,
+                (subject.total_seconds ?? 0) - session.duration_seconds
+              ),
+            })
+            .eq('id', session.subject_id);
+
+          if (updateError) {
+            console.error('Gagal mengurangi total detik mata pelajaran:', updateError.message);
+          }
+        }
+      }
+
+      await refreshStats();
+    } catch (err) {
+      console.error('Error menghapus sesi belajar:', err);
+    }
+  };
+
+  return { stats, todaySeconds, recentSessions, loading, refreshStats, deleteSession };
 }
 
 export type UseStudyStatsReturn = ReturnType<typeof useStudyStats>;

@@ -18,6 +18,13 @@ export function StudyTimerTab() {
   const subj = useSubjects();
   const timer = useStudyTimer(stats.refreshStats);
   const [showSubjectModal, setShowSubjectModal] = useState(false);
+  const [confirmSessionId, setConfirmSessionId] = useState<string | null>(null);
+
+  const handleDeleteSession = async (id: string) => {
+    setConfirmSessionId(null);
+    await stats.deleteSession(id);
+    await subj.fetchSubjects();
+  };
 
   const hasStarted = timer.isRunning || timer.elapsedSeconds > 0;
   const isPomodoro = timer.mode === 'pomodoro';
@@ -390,6 +397,30 @@ export function StudyTimerTab() {
                   <div className="text-[13px] font-bold text-dark shrink-0">
                     {fmtDurationHuman(session.duration_seconds)}
                   </div>
+                  {confirmSessionId === session.id ? (
+                    <div className="flex gap-1.5 shrink-0">
+                      <button
+                        onClick={() => handleDeleteSession(session.id)}
+                        className="border-none bg-accent text-white rounded-lg py-1.5 px-2.5 text-[11px] font-semibold cursor-pointer hover:bg-accent/90 transition-colors"
+                      >
+                        Hapus
+                      </button>
+                      <button
+                        onClick={() => setConfirmSessionId(null)}
+                        className="border border-border bg-white text-muted rounded-lg py-1.5 px-2.5 text-[11px] font-semibold cursor-pointer hover:bg-border/50 transition-colors"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmSessionId(session.id)}
+                      aria-label="Hapus sesi belajar"
+                      className="w-7 h-7 rounded-lg border-none bg-[#E76F51]/10 cursor-pointer text-xs text-[#E76F51] flex items-center justify-center hover:bg-[#E76F51]/20 transition-colors shrink-0"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               );
             })}

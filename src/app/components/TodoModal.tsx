@@ -54,8 +54,8 @@ export function TodoModal({ form, onFormChange, onSubmit, onClose, isEditing }: 
             <div>
               <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">DESKRIPSI</label>
               <textarea
-                value={form.description}
-                onChange={(e) => onFormChange({ ...form, description: e.target.value })}
+                value={form.content}
+                onChange={(e) => onFormChange({ ...form, content: e.target.value })}
                 placeholder="Tambahkan detail (opsional)"
                 rows={3}
                 className="w-full py-3 px-3.5 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark outline-none resize-y transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-lighter"

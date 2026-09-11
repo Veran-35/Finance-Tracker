@@ -3,11 +3,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabase/client';
 import { useAuth } from '@/app/context/AuthContext';
-import { Todo, TodoFormData } from '@/app/types/todo';
+import { daysUntil } from '@/app/utils/date';
+import { DueSoonTodo, Todo, TodoFormData } from '@/app/types/todo';
+
+const REMINDER_KEY = 'todo-reminder-days';
+const DEFAULT_REMINDER_DAYS = 3;
+
+function loadReminderDays(): number {
+  if (typeof window === 'undefined') return DEFAULT_REMINDER_DAYS;
+  try {
+    const raw = window.localStorage.getItem(REMINDER_KEY);
+    if (raw) {
+      const value = Math.floor(Number(JSON.parse(raw)));
+      if (Number.isFinite(value) && value >= 1) return Math.min(value, 30);
+    }
+  } catch {
+    // setting korup: pakai default
+  }
+  return DEFAULT_REMINDER_DAYS;
+}
 
 const DEFAULT_FORM: TodoFormData = {
   title: '',
-  description: '',
+  content: '',
   priority: 'medium',
   due_date: '',
 };
@@ -20,6 +38,64 @@ export function useTodos() {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [form, setForm] = useState<TodoFormData>({ ...DEFAULT_FORM });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [listId, setListId] = useState<string | null>(null);
+  const [reminderDays, setReminderDaysState] = useState<number>(loadReminderDays);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(REMINDER_KEY, JSON.stringify(reminderDays));
+    } catch {
+      // localStorage tidak tersedia: setting cukup hidup di memori
+    }
+  }, [reminderDays]);
+
+  function setReminderDays(raw: string) {
+    const value = Math.floor(Number(raw));
+    if (!Number.isFinite(value) || value < 1) return;
+    setReminderDaysState(Math.min(value, 30));
+  }
+
+  // todos.list_id NOT NULL: pakai daftar pertama user, atau buat satu bila belum ada.
+  const ensureListId = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+    if (listId) return listId;
+
+    try {
+      const { data, error } = await supabase
+        .from('todo_lists')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('position', { ascending: true })
+        .limit(1);
+
+      if (error) {
+        console.error('Gagal memuat daftar todo:', error.message);
+        return null;
+      }
+
+      if (data && data.length > 0) {
+        setListId(data[0].id);
+        return data[0].id;
+      }
+
+      const { data: created, error: createError } = await supabase
+        .from('todo_lists')
+        .insert({ user_id: user.id, title: 'Umum' })
+        .select('id')
+        .single();
+
+      if (createError || !created) {
+        console.error('Gagal membuat daftar todo:', createError?.message);
+        return null;
+      }
+
+      setListId(created.id);
+      return created.id;
+    } catch (err) {
+      console.error('Error menyiapkan daftar todo:', err);
+      return null;
+    }
+  }, [user, listId]);
 
   // ─── Fetch Todos ───────────────────────────────────────────────────
   const fetchTodos = useCallback(async () => {
@@ -57,13 +133,19 @@ export function useTodos() {
       return { error: 'Title is required' };
     }
 
+    const targetListId = await ensureListId();
+    if (!targetListId) {
+      return { error: 'Daftar todo belum siap' };
+    }
+
     try {
       const { data, error } = await supabase
         .from('todos')
         .insert({
           user_id: user.id,
+          list_id: targetListId,
           title: form.title.trim(),
-          description: form.description.trim() || null,
+          content: form.content.trim() || null,
           priority: form.priority,
           due_date: form.due_date || null,
           is_completed: false,
@@ -139,7 +221,7 @@ export function useTodos() {
     setEditingId(todo.id);
     setForm({
       title: todo.title,
-      description: todo.description || '',
+      content: todo.content || '',
       priority: todo.priority,
       due_date: todo.due_date || '',
     });
@@ -153,7 +235,7 @@ export function useTodos() {
     try {
       await updateTodo(editingId, {
         title: form.title.trim(),
-        description: form.description.trim() || null,
+        content: form.content.trim() || null,
         priority: form.priority,
         due_date: form.due_date || null,
       });
@@ -183,6 +265,12 @@ export function useTodos() {
     completed: todos.filter((t) => t.is_completed).length,
   };
 
+  const dueSoonTodos: DueSoonTodo[] = todos
+    .filter((t) => !t.is_completed && t.due_date)
+    .map((todo) => ({ todo, daysLeft: daysUntil(todo.due_date as string) }))
+    .filter(({ daysLeft }) => daysLeft >= 0 && daysLeft <= reminderDays)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+
   return {
     todos: filtered,
     allTodos: todos,
@@ -193,6 +281,9 @@ export function useTodos() {
     setForm,
     editingId,
     stats,
+    reminderDays,
+    setReminderDays,
+    dueSoonTodos,
     addTodo,
     toggleTodo,
     deleteTodo,

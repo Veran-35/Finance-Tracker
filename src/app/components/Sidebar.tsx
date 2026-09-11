@@ -11,6 +11,32 @@ interface SidebarProps {
   onToggleSidebar: () => void;
 }
 
+
+const date = new Date();
+const monthNames: Record<number, string> = {
+  1: "Januari", 
+  2: "Februari",
+  3: "Maret",
+  4: "April",
+  5: "Mei",
+  6: "Juni",
+  7: "Juli",
+  8: "Agustus",
+  9: "September",
+  10: "Oktober",
+  11: "November",
+  12: "Desember"
+};
+const dayNames: Record<number, string> = {
+  0: "Minggu",
+  1: "Senin",
+  2: "Selasa",
+  3: "Rabu",
+  4: "Kamis",
+  5: "Jumat",
+  6: "Sabtu",
+};
+
 export function Sidebar({
   activeTab,
   sidebarOpen,
@@ -19,6 +45,8 @@ export function Sidebar({
   totalExpense,
   onTabChange,
   onToggleSidebar,
+  
+  
 }: SidebarProps) {
   return (
     <>
@@ -76,8 +104,11 @@ export function Sidebar({
               <div className="text-[17px] font-semibold font-display leading-tight">
                 FinTrack
               </div>
-              <div className="text-[11px] text-muted-light tracking-wide">
-                Mei 2025
+              <div className="text-[15px] text-muted-light tracking-wide mt-1 pl-0.5">
+                {dayNames[date.getDay()]} 
+              </div>
+              <div className="text-[15px] text-muted-light tracking-wide mt-0.5">
+                {date.getDate()} {monthNames[date.getMonth() + 1]} {date.getFullYear()}
               </div>
             </div>
           )}

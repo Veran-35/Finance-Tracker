@@ -14,6 +14,7 @@ import { TransactionModal } from "@/app/components/TransactionModal";
 import { useTransactions } from "@/app/hooks/useTransactions";
 import { useNavigation } from "@/app/hooks/useNavigation";
 import { useBudgets } from "@/app/hooks/useBudgets";
+import { useTodos } from "@/app/hooks/useTodos";
 
 export default function FinancialTracker() {
   const { user, loading } = useAuth();
@@ -21,6 +22,7 @@ export default function FinancialTracker() {
   const txn = useTransactions();
   const nav = useNavigation();
   const bgt = useBudgets();
+  const todo = useTodos();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -55,9 +57,14 @@ export default function FinancialTracker() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <Header activeTab={nav.activeTab} onOpenSidebar={() => nav.setSidebarOpen(true)} />
+        <Header
+          activeTab={nav.activeTab}
+          onOpenSidebar={() => nav.setSidebarOpen(true)}
+          dueSoon={todo.dueSoonTodos}
+          reminderDays={todo.reminderDays}
+        />
 
-        <main className="py-7 px-8 max-w-[1100px] w-full mx-auto max-lg:px-4 max-lg:py-4">
+        <main className="py-7 px-8 max-w-[1400px] w-full mx-auto max-lg:p-4 ">
           {nav.activeTab === "overview" && (
             <OverviewTab
               balance={txn.balance}
@@ -90,7 +97,7 @@ export default function FinancialTracker() {
           )}
 
           {nav.activeTab === "todos" && (
-            <TodoTab />
+            <TodoTab todo={todo} />
           )}
 
           {nav.activeTab === "study" && (

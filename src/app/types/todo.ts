@@ -4,7 +4,7 @@ export interface Todo {
   id: string;
   user_id: string;
   title: string;
-  description: string | null;
+  content: string | null;
   is_completed: boolean;
   priority: TodoPriority;
   due_date: string | null;
@@ -13,9 +13,14 @@ export interface Todo {
 
 export interface TodoFormData {
   title: string;
-  description: string;
+  content: string;
   priority: TodoPriority;
   due_date: string;
+}
+
+export interface DueSoonTodo {
+  todo: Todo;
+  daysLeft: number;
 }
 
 export const PRIORITY_CONFIG: Record<TodoPriority, { label: string; color: string; bg: string; icon: string }> = {

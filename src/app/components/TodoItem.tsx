@@ -1,15 +1,24 @@
 import { Todo, PRIORITY_CONFIG } from '@/app/types/todo';
+import { daysUntil } from '@/app/utils/date';
 
 interface TodoItemProps {
   todo: Todo;
+  reminderDays: number;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (todo: Todo) => void;
 }
 
-export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+export function TodoItem({ todo, reminderDays, onToggle, onDelete, onEdit }: TodoItemProps) {
   const priority = PRIORITY_CONFIG[todo.priority];
   const isOverdue = todo.due_date && !todo.is_completed && new Date(todo.due_date) < new Date(new Date().toDateString());
+  const daysLeft = todo.due_date ? daysUntil(todo.due_date) : null;
+  const isDueSoon =
+    !isOverdue &&
+    !todo.is_completed &&
+    daysLeft !== null &&
+    daysLeft >= 0 &&
+    daysLeft <= reminderDays;
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -55,8 +64,8 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
           </span>
         </div>
 
-        {todo.description && (
-          <p className="text-xs text-muted-light m-0 mb-2 leading-relaxed">{todo.description}</p>
+        {todo.content && (
+          <p className="text-xs text-muted-light m-0 mb-2 leading-relaxed">{todo.content}</p>
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -77,6 +86,13 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
             }`}>
               📅 {formatDate(todo.due_date)}
               {isOverdue && ' (Terlambat)'}
+            </span>
+          )}
+
+          {/* Due soon reminder */}
+          {isDueSoon && (
+            <span className="text-[11px] font-medium py-0.5 px-2.5 rounded-md flex items-center gap-1 text-[#F4A261] bg-[#F4A261]/[0.12]">
+              ⏰ H-{daysLeft}
             </span>
           )}
         </div>

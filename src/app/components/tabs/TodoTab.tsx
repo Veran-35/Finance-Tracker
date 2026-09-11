@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useTodos } from "@/app/hooks/useTodos";
 import { TodoItem } from "@/app/components/TodoItem";
 import { TodoModal } from "@/app/components/TodoModal";
+import { UseTodosReturn } from "@/app/hooks/useTodos";
 
-export function TodoTab() {
-  const todo = useTodos();
+interface TodoTabProps {
+  todo: UseTodosReturn;
+}
+
+export function TodoTab({ todo }: TodoTabProps) {
   const [showModal, setShowModal] = useState(false);
 
   const handleOpenAdd = () => {
@@ -114,15 +117,55 @@ export function TodoTab() {
           ))}
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="bg-gradient-accent text-white border-none rounded-[10px] py-2.5 px-5 text-[13px] font-semibold cursor-pointer flex items-center gap-1.5 shadow-accent transition-all hover:shadow-accent-lg max-md:mt-5"
-        >
-          <span className="text-base leading-none">+</span>
-          Todo Baru
-        </button>
-      </div>
+        <div className="flex items-center gap-3 max-md:mt-5">
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="reminder-days"
+              className="text-xs font-semibold text-muted whitespace-nowrap"
+            >
+              Ingatkan H-
+            </label>
+            <input
+              id="reminder-days"
+              type="number"
+              min={1}
+              max={30}
+              value={todo.reminderDays}
+              onChange={(e) => todo.setReminderDays(e.target.value)}
+              className="w-16 py-1.5 px-2 border-[1.5px] border-border-dark rounded-lg text-[13px] text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 text-center"
+            />
+          </div>
 
+          <button
+            onClick={handleOpenAdd}
+            className="bg-gradient-accent text-white border-none rounded-[10px] py-2.5 px-5 text-[13px] font-semibold cursor-pointer flex items-center gap-1.5 shadow-accent transition-all hover:shadow-accent-lg"
+          >
+            <span className="text-base leading-none">+</span>
+            Todo Baru
+          </button>
+        </div>
+      </div>
+      {todo.stats.total > 0 && (
+        <div className="my-6 p-4 px-5 bg-white rounded-[14px] border border-border animate-[fadeInUp_0.7s_ease-out]">
+          <div className="flex justify-between items-center mb-2.5">
+            <span className="text-[13px] font-semibold text-dark">
+              Progress
+            </span>
+            <span className="text-[13px] font-bold text-green">
+              {Math.round((todo.stats.completed / todo.stats.total) * 100)}%
+            </span>
+          </div>
+          <div className="h-2 bg-[#F0EDE8] rounded-[10px] overflow-hidden">
+            <div
+              className="h-full bg-gradient-teal rounded-[10px] transition-[width] duration-500 ease-in-out"
+              style={{
+                width: `${(todo.stats.completed / todo.stats.total) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+      
       {/* Todo List */}
       <div className="flex flex-col gap-2.5 animate-[fadeInUp_0.6s_ease-out]">
         {todo.loading ? (
@@ -157,6 +200,7 @@ export function TodoTab() {
             <TodoItem
               key={t.id}
               todo={t}
+              reminderDays={todo.reminderDays}
               onToggle={todo.toggleTodo}
               onDelete={todo.deleteTodo}
               onEdit={handleEdit}
@@ -166,26 +210,7 @@ export function TodoTab() {
       </div>
 
       {/* Progress Bar */}
-      {todo.stats.total > 0 && (
-        <div className="mt-6 p-4 px-5 bg-white rounded-[14px] border border-border animate-[fadeInUp_0.7s_ease-out]">
-          <div className="flex justify-between items-center mb-2.5">
-            <span className="text-[13px] font-semibold text-dark">
-              Progress
-            </span>
-            <span className="text-[13px] font-bold text-green">
-              {Math.round((todo.stats.completed / todo.stats.total) * 100)}%
-            </span>
-          </div>
-          <div className="h-2 bg-[#F0EDE8] rounded-[10px] overflow-hidden">
-            <div
-              className="h-full bg-gradient-teal rounded-[10px] transition-[width] duration-500 ease-in-out"
-              style={{
-                width: `${(todo.stats.completed / todo.stats.total) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      )}
+      
 
       {/* Todo Modal */}
       {showModal && (
