@@ -107,6 +107,7 @@ export function useTodos() {
         .from('todos')
         .select('*')
         .eq('user_id', user.id)
+        .order('position', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -216,6 +217,35 @@ export function useTodos() {
     }
   };
 
+  // ─── Reorder (drag & drop) ─────────────────────────────────────────
+  const reorderTodos = async (dragId: string, overId: string) => {
+    if (dragId === overId) return;
+    const from = todos.findIndex((t) => t.id === dragId);
+    const to = todos.findIndex((t) => t.id === overId);
+    if (from < 0 || to < 0) return;
+
+    const next = [...todos];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setTodos(next);
+
+    try {
+      await Promise.all(
+        next
+          .map((t, i) => ({ id: t.id, position: i, changed: t.position !== i }))
+          .filter((entry) => entry.changed)
+          .map((entry) =>
+            supabase
+              .from('todos')
+              .update({ position: entry.position })
+              .eq('id', entry.id)
+          )
+      );
+    } catch (err) {
+      console.error('Gagal menyimpan urutan todo:', err);
+    }
+  };
+
   // ─── Edit Helpers ──────────────────────────────────────────────────
   const startEdit = (todo: Todo) => {
     setEditingId(todo.id);
@@ -287,6 +317,7 @@ export function useTodos() {
     addTodo,
     toggleTodo,
     deleteTodo,
+    reorderTodos,
     startEdit,
     saveEdit,
     cancelEdit,

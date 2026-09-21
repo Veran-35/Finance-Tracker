@@ -8,6 +8,7 @@ export interface Todo {
   is_completed: boolean;
   priority: TodoPriority;
   due_date: string | null;
+  position: number;
   created_at: string;
 }
 

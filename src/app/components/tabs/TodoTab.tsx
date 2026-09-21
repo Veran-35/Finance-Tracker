@@ -36,6 +36,22 @@ export function TodoTab({ todo }: TodoTabProps) {
     setShowModal(false);
   };
 
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  const handleDragStart = (id: string) => setDragId(id);
+  const handleDragEnter = (id: string) => setDragOverId(id);
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
+  const handleDrop = (id: string) => {
+    if (dragId && dragId !== id) {
+      todo.reorderTodos(dragId, id);
+    }
+    handleDragEnd();
+  };
+
   const filters = [
     { key: "all" as const, label: "Semua", count: todo.stats.total },
     { key: "active" as const, label: "Aktif", count: todo.stats.active },
@@ -204,6 +220,11 @@ export function TodoTab({ todo }: TodoTabProps) {
               onToggle={todo.toggleTodo}
               onDelete={todo.deleteTodo}
               onEdit={handleEdit}
+              onDragStart={handleDragStart}
+              onDragEnter={handleDragEnter}
+              onDragEnd={handleDragEnd}
+              onDrop={handleDrop}
+              isDragOver={dragOverId === t.id && dragId !== t.id}
             />
           ))
         )}

@@ -7,9 +7,25 @@ interface TodoItemProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (todo: Todo) => void;
+  onDragStart: (id: string) => void;
+  onDragEnter: (id: string) => void;
+  onDragEnd: () => void;
+  onDrop: (id: string) => void;
+  isDragOver: boolean;
 }
 
-export function TodoItem({ todo, reminderDays, onToggle, onDelete, onEdit }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  reminderDays,
+  onToggle,
+  onDelete,
+  onEdit,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+  onDrop,
+  isDragOver,
+}: TodoItemProps) {
   const priority = PRIORITY_CONFIG[todo.priority];
   const isOverdue = todo.due_date && !todo.is_completed && new Date(todo.due_date) < new Date(new Date().toDateString());
   const daysLeft = todo.due_date ? daysUntil(todo.due_date) : null;
@@ -33,11 +49,31 @@ export function TodoItem({ todo, reminderDays, onToggle, onDelete, onEdit }: Tod
 
   return (
     <div
-      className={`flex items-start gap-3.5 py-4 px-4.5 bg-white rounded-[14px] transition-all duration-250 relative overflow-hidden hover:border-accent hover:shadow-[0_4px_16px_rgba(231,111,81,0.08)] ${
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        onDragStart(todo.id);
+      }}
+      onDragEnter={() => onDragEnter(todo.id)}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop(todo.id);
+      }}
+      onDragEnd={onDragEnd}
+      className={`flex items-start gap-3.5 py-4 px-4.5 bg-white rounded-[14px] transition-all duration-250 relative overflow-hidden cursor-grab active:cursor-grabbing hover:border-accent hover:shadow-[0_4px_16px_rgba(231,111,81,0.08)] ${
         isOverdue ? "border border-accent/25" : "border border-border"
-      }`}
+      } ${isDragOver ? "ring-2 ring-accent/40 border-accent" : ""}`}
       style={{ opacity: todo.is_completed ? 0.65 : 1 }}
     >
+      {/* Drag handle */}
+      <span
+        className="text-muted-lighter text-base leading-none mt-1 shrink-0 select-none"
+        aria-hidden="true"
+      >
+        ⠿
+      </span>
+
       {/* Checkbox */}
       <button
         onClick={() => onToggle(todo.id)}

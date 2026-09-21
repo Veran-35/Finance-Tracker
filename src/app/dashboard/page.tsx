@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { Sidebar } from "@/app/components/Sidebar";
@@ -11,6 +11,8 @@ import { BudgetTab } from "@/app/components/tabs/BudgetTab";
 import { TodoTab } from "@/app/components/tabs/TodoTab";
 import { StudyTimerTab } from "@/app/components/tabs/StudyTimerTab";
 import { TransactionModal } from "@/app/components/TransactionModal";
+import { CommandPalette, type Command } from "@/app/components/CommandPalette";
+import { NAV_ITEMS } from "@/app/data/initial-data";
 import { useTransactions } from "@/app/hooks/useTransactions";
 import { useNavigation } from "@/app/hooks/useNavigation";
 import { useBudgets } from "@/app/hooks/useBudgets";
@@ -23,6 +25,42 @@ export default function FinancialTracker() {
   const nav = useNavigation();
   const bgt = useBudgets();
   const todo = useTodos();
+
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const commands = useMemo<Command[]>(
+    () => [
+      ...NAV_ITEMS.map((n) => ({
+        id: `nav-${n.id}`,
+        label: `Buka ${n.label}`,
+        icon: n.icon,
+        run: () => nav.setActiveTab(n.id),
+      })),
+      {
+        id: "new-txn",
+        label: "Transaksi Baru",
+        icon: "💸",
+        hint: "⏎",
+        run: () => {
+          txn.cancelEdit();
+          nav.setActiveTab("transaksi");
+          nav.setShowModal(true);
+        },
+      },
+    ],
+    [nav, txn]
+  );
 
   useEffect(() => {
     if (!loading && !user) {
@@ -125,6 +163,13 @@ export default function FinancialTracker() {
             txn.cancelEdit();
             nav.setShowModal(false);
           }}
+        />
+      )}
+
+      {paletteOpen && (
+        <CommandPalette
+          onClose={() => setPaletteOpen(false)}
+          commands={commands}
         />
       )}
     </div>
