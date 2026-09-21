@@ -171,16 +171,28 @@ export interface CsvImportResult {
   skipped: number;
 }
 
+// Sel bisa berasal dari CSV (string) atau XLSX (string/number/Date).
+export type ImportCell = string | number | Date | null | undefined;
+
+function cellToString(cell: ImportCell): string {
+  if (cell == null) return '';
+  if (cell instanceof Date) {
+    if (Number.isNaN(cell.getTime())) return '';
+    return `${cell.getFullYear()}-${pad(cell.getMonth() + 1)}-${pad(cell.getDate())}`;
+  }
+  return String(cell);
+}
+
 function normalize(s: string) {
   return s.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-// Petakan baris CSV -> form transaksi. Kolom dicari lewat header (fleksibel).
-export function csvToTransactions(
-  text: string,
+// Petakan baris (dari CSV atau XLSX) -> form transaksi. Kolom dicari lewat header (fleksibel).
+export function rowsToTransactions(
+  rawRows: ImportCell[][],
   categories: Category[]
 ): CsvImportResult {
-  const rows = parseCsv(text);
+  const rows = rawRows.map((r) => r.map(cellToString));
   const result: CsvImportResult = { rows: [], skipped: 0 };
   if (rows.length === 0) return result;
 
@@ -267,4 +279,12 @@ export function csvToTransactions(
   }
 
   return result;
+}
+
+// Impor dari teks CSV: parse dulu jadi baris, lalu petakan.
+export function csvToTransactions(
+  text: string,
+  categories: Category[]
+): CsvImportResult {
+  return rowsToTransactions(parseCsv(text), categories);
 }

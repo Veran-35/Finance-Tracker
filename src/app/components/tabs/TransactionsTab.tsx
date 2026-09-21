@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Transaction } from "@/app/types";
+import { Transaction, TransactionFormData } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { CategoryModal } from "@/app/components/CategoryModal";
 import { SkeletonRow } from "@/app/components/Skeleton";
@@ -36,8 +36,25 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
 
   const handleImportFile = async (file: File) => {
     try {
-      const text = await file.text();
-      const { rows, skipped } = csvToTransactions(text, txn.categories);
+      const isExcel =
+        /\.(xlsx|xls|xlsm)$/i.test(file.name) ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+        file.type === "application/vnd.ms-excel";
+
+      let rows: TransactionFormData[];
+      let skipped: number;
+
+      if (isExcel) {
+        // Dynamic import: SheetJS hanya dimuat saat benar-benar impor Excel.
+        const { xlsxToTransactions } = await import("@/app/utils/xlsx");
+        const buffer = await file.arrayBuffer();
+        ({ rows, skipped } = xlsxToTransactions(buffer, txn.categories));
+      } else {
+        const text = await file.text();
+        ({ rows, skipped } = csvToTransactions(text, txn.categories));
+      }
+
       if (rows.length === 0) {
         toast.error("Tidak ada baris valid yang bisa diimpor");
         return;
@@ -49,7 +66,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           : `${rows.length} transaksi diimpor`
       );
     } catch {
-      toast.error("Gagal membaca berkas CSV");
+      toast.error("Gagal membaca berkas. Pastikan format CSV atau Excel (.xlsx).");
     }
   };
 
@@ -130,7 +147,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          title="Impor transaksi dari CSV"
+          title="Impor transaksi dari CSV atau Excel (.xlsx)"
           className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
         >
           ⬆ Impor
@@ -138,7 +155,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
         <input
           ref={fileInputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept=".csv,.xlsx,.xls,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
