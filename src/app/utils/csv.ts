@@ -1,7 +1,7 @@
 import { Transaction, Category, TransactionFormData } from '@/app/types';
 
 // Kolom mengikuti workbook Excel milik user (catatan_keuangan_2026.xlsx):
-// Debet = uang keluar (expense), Kredit = uang masuk (income).
+// Debet = uang masuk (income), Kredit = uang keluar (expense).
 export const CSV_HEADERS = [
   'NO',
   'Tanggal',
@@ -81,14 +81,14 @@ export function transactionsToCsv(
 
   const lines = [CSV_HEADERS.join(',')];
   sorted.forEach((t, i) => {
-    const isExpense = t.type === 'expense';
+    const isIncome = t.type === 'income';
     lines.push(
       [
         String(i + 1),
         t.date,
         escapeCell(t.description),
-        isExpense ? String(t.amount) : '',
-        isExpense ? '' : String(t.amount),
+        isIncome ? String(t.amount) : '',
+        isIncome ? '' : String(t.amount),
         escapeCell(catName(t.category_id)),
         '',
       ].join(',')
@@ -242,13 +242,14 @@ export function rowsToTransactions(
         result.skipped++;
         continue;
       }
-      type = kredit > 0 ? 'income' : 'expense';
-      amount = kredit > 0 ? kredit : debet;
+      // Debet = uang masuk (income), Kredit = uang keluar (expense).
+      type = debet > 0 ? 'income' : 'expense';
+      amount = debet > 0 ? debet : kredit;
     } else if (iAmount >= 0) {
       amount = parseAmount(r[iAmount] || '');
       const t = (iType >= 0 ? normalize(r[iType] || '') : '').trim();
       type =
-        t.includes('masuk') || t.includes('income') || t.includes('kredit')
+        t.includes('masuk') || t.includes('income') || t.includes('pemasukan')
           ? 'income'
           : 'expense';
       if (amount === 0) {

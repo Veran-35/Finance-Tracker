@@ -14,8 +14,8 @@ const HEADER = ['NO', 'Tanggal', 'Kegiatan', 'Debet (Rp)', 'Kredit (Rp)', 'Keter
 function buildMonthSheet() {
   return XLSX.utils.aoa_to_sheet([
     HEADER,
-    [1, new Date(2026, 8, 5), 'Bakso', 25000, '', 'Makanan', ''],
-    [2, new Date(2026, 8, 1), 'Gaji', '', 5000000, 'Gaji', ''],
+    [1, new Date(2026, 8, 5), 'Bakso', '', 25000, 'Makanan', ''],
+    [2, new Date(2026, 8, 1), 'Gaji', 5000000, '', 'Gaji', ''],
   ]);
 }
 
@@ -27,7 +27,7 @@ function buildWorkbook(): Uint8Array {
 }
 
 describe('xlsxToTransactions', () => {
-  it('reads every sheet and maps Debet->expense, Kredit->income', () => {
+  it('reads every sheet and maps Debet->income, Kredit->expense', () => {
     const { rows, skipped } = xlsxToTransactions(buildWorkbook(), categories);
 
     expect(skipped).toBe(0);

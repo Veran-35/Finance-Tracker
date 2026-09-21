@@ -66,7 +66,7 @@ describe('parseCsv', () => {
 });
 
 describe('transactionsToCsv', () => {
-  it('maps expense to Debet and income to Kredit', () => {
+  it('maps income to Debet and expense to Kredit', () => {
     const txns: Transaction[] = [
       { id: 't1', type: 'expense', amount: 25000, category_id: 'c1', description: 'Bakso', date: '2026-09-05' },
       { id: 't2', type: 'income', amount: 5000000, category_id: 'c2', description: 'Gaji', date: '2026-09-01' },
@@ -75,8 +75,8 @@ describe('transactionsToCsv', () => {
     const lines = csv.split('\r\n');
     expect(lines[0]).toBe('NO,Tanggal,Kegiatan,Debet (Rp),Kredit (Rp),Keterangan,Bank');
     // terurut naik berdasarkan tanggal: income 09-01 lebih dulu
-    expect(lines[1]).toBe('1,2026-09-01,Gaji,,5000000,Gaji,');
-    expect(lines[2]).toBe('2,2026-09-05,Bakso,25000,,Makanan,');
+    expect(lines[1]).toBe('1,2026-09-01,Gaji,5000000,,Gaji,');
+    expect(lines[2]).toBe('2,2026-09-05,Bakso,,25000,Makanan,');
   });
 });
 
@@ -106,7 +106,7 @@ describe('csvToTransactions', () => {
   it('maps an unknown Keterangan to the Lainnya base with a custom name', () => {
     const csv = [
       'NO,Tanggal,Kegiatan,Debet (Rp),Kredit (Rp),Keterangan,Bank',
-      '1,2026-09-05,Parkir,5000,,Parkir Kantor,',
+      '1,2026-09-05,Parkir,,5000,Parkir Kantor,',
     ].join('\r\n');
     const { rows } = csvToTransactions(csv, categories);
     expect(rows).toHaveLength(1);
