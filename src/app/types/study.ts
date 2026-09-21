@@ -40,6 +40,7 @@ export interface PomodoroSettings {
   shortBreakMinutes: number;
   longBreakMinutes: number;
   longBreakInterval: number;
+  autoContinue: boolean;
 }
 
 export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
@@ -47,6 +48,7 @@ export const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
   shortBreakMinutes: 5,
   longBreakMinutes: 15,
   longBreakInterval: 4,
+  autoContinue: false,
 };
 
 export const MODE_CONFIG: Record<StudyMode, { label: string; icon: string }> = {

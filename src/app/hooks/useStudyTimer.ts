@@ -91,7 +91,9 @@ export function useStudyTimer(onSessionSaved?: () => void) {
         setPhase('work');
         phaseLeftRef.current = settings.workMinutes * 60;
       }
-      setIsRunning(false);
+      if (!settings.autoContinue) {
+        setIsRunning(false);
+      }
     }
 
     setElapsedSeconds(elapsedRef.current);

@@ -5,6 +5,7 @@ import { useSubjects } from '@/app/hooks/useSubjects';
 import { useStudyStats } from '@/app/hooks/useStudyStats';
 import { useStudyTimer } from '@/app/hooks/useStudyTimer';
 import { SubjectModal } from '@/app/components/SubjectModal';
+import { StudyProgress } from '@/app/components/StudyProgress';
 import { fmtDuration, fmtDurationHuman } from '@/app/utils/format';
 import {
   MODE_CONFIG,
@@ -12,6 +13,12 @@ import {
   PomodoroSettings,
   StudyMode,
 } from '@/app/types/study';
+
+type NumericSettingKey =
+  | 'workMinutes'
+  | 'shortBreakMinutes'
+  | 'longBreakMinutes'
+  | 'longBreakInterval';
 
 export function StudyTimerTab() {
   const stats = useStudyStats();
@@ -61,7 +68,7 @@ export function StudyTimerTab() {
     setShowSubjectModal(false);
   };
 
-  const updateSetting = (key: keyof PomodoroSettings, raw: string) => {
+  const updateSetting = (key: NumericSettingKey, raw: string) => {
     const value = Math.floor(Number(raw));
     if (!Number.isFinite(value) || value < 1) return;
     const max = key === 'longBreakInterval' ? 12 : 180;
@@ -119,6 +126,13 @@ export function StudyTimerTab() {
           </div>
         ))}
       </div>
+
+      {/* Streak, Target Mingguan & Heatmap */}
+      <StudyProgress
+        dailySeconds={stats.dailySeconds}
+        streak={stats.streak}
+        thisWeekSeconds={stats.stats.this_week_seconds}
+      />
 
       {/* Timer Card */}
       <div className="bg-white rounded-2xl border border-border p-6 mb-5 animate-[fadeInUp_0.5s_ease-out]">
@@ -260,28 +274,44 @@ export function StudyTimerTab() {
 
         {/* Pomodoro Settings */}
         {isPomodoro && !hasStarted && (
-          <div className="mt-6 pt-5 border-t border-border grid grid-cols-4 gap-3 max-md:grid-cols-2">
-            {(
-              [
-                { key: 'workMinutes', label: 'Fokus (menit)' },
-                { key: 'shortBreakMinutes', label: 'Istirahat (menit)' },
-                { key: 'longBreakMinutes', label: 'Istirahat Panjang' },
-                { key: 'longBreakInterval', label: 'Long Break Setiap' },
-              ] as { key: keyof PomodoroSettings; label: string }[]
-            ).map((field) => (
-              <div key={field.key}>
-                <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                  {field.label}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={timer.settings[field.key]}
-                  onChange={(e) => updateSetting(field.key, e.target.value)}
-                  className="w-full py-2 px-3 border-[1.5px] border-border-dark rounded-lg text-[13px] text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 text-center"
-                />
-              </div>
-            ))}
+          <div className="mt-6 pt-5 border-t border-border">
+            <div className="grid grid-cols-4 gap-3 max-md:grid-cols-2">
+              {(
+                [
+                  { key: 'workMinutes', label: 'Fokus (menit)' },
+                  { key: 'shortBreakMinutes', label: 'Istirahat (menit)' },
+                  { key: 'longBreakMinutes', label: 'Istirahat Panjang' },
+                  { key: 'longBreakInterval', label: 'Long Break Setiap' },
+                ] as { key: NumericSettingKey; label: string }[]
+              ).map((field) => (
+                <div key={field.key}>
+                  <label className="block text-[11px] font-semibold text-muted mb-1.5">
+                    {field.label}
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={timer.settings[field.key]}
+                    onChange={(e) => updateSetting(field.key, e.target.value)}
+                    className="w-full py-2 px-3 border-[1.5px] border-border-dark rounded-lg text-[13px] text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 text-center"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <label className="flex items-center gap-2.5 mt-4 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={timer.settings.autoContinue}
+                onChange={(e) =>
+                  timer.updateSettings({ autoContinue: e.target.checked })
+                }
+                className="w-4 h-4 accent-[#2A9D8F] cursor-pointer"
+              />
+              <span className="text-[12px] text-muted">
+                Lanjut otomatis ke fase berikutnya (fokus ⇄ istirahat)
+              </span>
+            </label>
           </div>
         )}
       </div>

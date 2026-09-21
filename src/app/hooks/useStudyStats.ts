@@ -12,12 +12,33 @@ const EMPTY_STATS: StudyStats = {
   this_month_seconds: 0,
 };
 
+function localDayKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// Hitung hari berturut-turut dengan sesi belajar, berakhir hari ini.
+// Bila hari ini belum ada, mulai dari kemarin agar streak yang berjalan tidak putus.
+export function computeStreak(daily: Record<string, number>): number {
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!(daily[localDayKey(cursor)] > 0)) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  let streak = 0;
+  while (daily[localDayKey(cursor)] > 0) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 export function useStudyStats() {
   const { user } = useAuth();
 
   const [stats, setStats] = useState<StudyStats>(EMPTY_STATS);
   const [todaySeconds, setTodaySeconds] = useState(0);
   const [recentSessions, setRecentSessions] = useState<StudySession[]>([]);
+  const [dailySeconds, setDailySeconds] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const refreshStats = useCallback(async () => {
@@ -27,7 +48,11 @@ export function useStudyStats() {
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
 
-      const [statsRes, todayRes, sessionsRes] = await Promise.all([
+      const heatmapStart = new Date();
+      heatmapStart.setHours(0, 0, 0, 0);
+      heatmapStart.setDate(heatmapStart.getDate() - 180);
+
+      const [statsRes, todayRes, sessionsRes, dailyRes] = await Promise.all([
         supabase
           .from('study_stats')
           .select('*')
@@ -46,6 +71,12 @@ export function useStudyStats() {
           .eq('status', 'completed')
           .order('started_at', { ascending: false })
           .limit(20),
+        supabase
+          .from('study_sessions')
+          .select('started_at, duration_seconds')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .gte('started_at', heatmapStart.toISOString()),
       ]);
 
       if (statsRes.error) {
@@ -67,6 +98,19 @@ export function useStudyStats() {
         console.error('Gagal memuat sesi terbaru:', sessionsRes.error.message);
       } else {
         setRecentSessions((sessionsRes.data ?? []) as StudySession[]);
+      }
+
+      if (dailyRes.error) {
+        console.error('Gagal memuat data heatmap:', dailyRes.error.message);
+      } else {
+        const map: Record<string, number> = {};
+        ((dailyRes.data ?? []) as { started_at: string; duration_seconds: number | null }[]).forEach(
+          (row) => {
+            const key = localDayKey(new Date(row.started_at));
+            map[key] = (map[key] || 0) + (row.duration_seconds ?? 0);
+          }
+        );
+        setDailySeconds(map);
       }
     } catch (err) {
       console.error('Error memuat statistik belajar:', err);
@@ -128,7 +172,7 @@ export function useStudyStats() {
     }
   };
 
-  return { stats, todaySeconds, recentSessions, loading, refreshStats, deleteSession };
+  return { stats, todaySeconds, recentSessions, loading, refreshStats, deleteSession, dailySeconds, streak: computeStreak(dailySeconds) };
 }
 
 export type UseStudyStatsReturn = ReturnType<typeof useStudyStats>;
