@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { AuthProvider } from "@/app/context/AuthContext";
+import { ToastProvider } from "@/app/components/Toast";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -29,9 +30,11 @@ export default function RootLayout({
       className={`${dmSans.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

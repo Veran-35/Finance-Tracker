@@ -75,6 +75,7 @@ export default function FinancialTracker() {
               expenseByCategory={txn.expenseByCategory}
               transactions={txn.transactions}
               categories={txn.categories}
+              loading={txn.loading}
             />
           )}
 

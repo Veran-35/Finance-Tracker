@@ -6,6 +6,7 @@ import { TransactionItem } from "@/app/components/TransactionItem";
 import { FinanceChart } from "@/app/components/FinanceChart";
 import { MonthlyChart } from "@/app/components/MonthlyChart";
 import { fmt, fmtShort } from "@/app/utils/format";
+import { SkeletonCard, Skeleton } from "@/app/components/Skeleton";
 
 interface OverviewTabProps {
   balance: number;
@@ -16,6 +17,7 @@ interface OverviewTabProps {
   expenseByCategory: ExpenseByCategory[];
   transactions: Transaction[];
   categories: Category[];
+  loading?: boolean;
 }
 
 export function OverviewTab({
@@ -27,7 +29,37 @@ export function OverviewTab({
   expenseByCategory,
   transactions,
   categories,
+  loading = false,
 }: OverviewTabProps) {
+  if (loading) {
+    return (
+      <div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <Skeleton className="h-[280px] rounded-2xl" />
+          <Skeleton className="h-[280px] rounded-2xl" />
+        </div>
+        <Skeleton className="h-[220px] rounded-2xl mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-[62px] rounded-xl" />
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-[62px] rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const statCards = [
     {
       label: "Saldo",

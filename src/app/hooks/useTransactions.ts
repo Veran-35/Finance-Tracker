@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Transaction, TransactionFormData, ExpenseByCategory, Category } from '@/app/types';
 import { supabase } from '@/app/lib/supabase/client';
 import { useAuth } from '@/app/context/AuthContext';
+import { useToast } from '@/app/components/Toast';
 
 const PAGE_SIZE = 10;
 
@@ -58,6 +59,7 @@ const DEFAULT_FORM: TransactionFormData = {
 
 export function useTransactions() {
   const { user } = useAuth();
+  const toast = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -332,6 +334,7 @@ export function useTransactions() {
 
       if (error) {
         console.error('Gagal menambah transaksi:', error.message);
+        toast.error('Gagal menambah transaksi');
         return;
       }
 
@@ -343,6 +346,11 @@ export function useTransactions() {
           category_id: categories[0]?.id || '',
           date: todayLocal(),
         });
+        toast.success(
+          added.length === 1
+            ? 'Transaksi ditambahkan'
+            : `${added.length} transaksi ditambahkan`
+        );
       }
     } catch (err) {
       console.error('Gagal menambah transaksi:', err);
@@ -373,6 +381,7 @@ export function useTransactions() {
 
       if (error) {
         console.error('Gagal memperbarui transaksi:', error.message);
+        toast.error('Gagal memperbarui transaksi');
         return;
       }
 
@@ -382,6 +391,7 @@ export function useTransactions() {
           prev.map((t) => (t.id === editingId ? updated : t))
         );
         cancelEdit();
+        toast.success('Transaksi diperbarui');
       }
     } catch (err) {
       console.error('Gagal memperbarui transaksi:', err);
@@ -400,10 +410,12 @@ export function useTransactions() {
 
       if (error) {
         console.error('Gagal menghapus transaksi:', error.message);
+        toast.error('Gagal menghapus transaksi');
         return;
       }
 
       setTransactions((prev) => prev.filter((t) => t.id !== id));
+      toast.success('Transaksi dihapus');
     } catch (err) {
       console.error('Gagal menghapus transaksi:', err);
     }
@@ -425,6 +437,7 @@ export function useTransactions() {
 
       if (error) {
         console.error('Gagal menghapus kategori:', error.message);
+        toast.error('Gagal menghapus kategori');
         return;
       }
 
@@ -442,6 +455,7 @@ export function useTransactions() {
           : prev
       );
       if (filterCategory === id) setFilterCategory('all');
+      toast.success(`Kategori "${target.name}" dihapus`);
     } catch (err) {
       console.error('Gagal menghapus kategori:', err);
     }

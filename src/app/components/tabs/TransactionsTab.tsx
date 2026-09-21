@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Transaction } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { CategoryModal } from "@/app/components/CategoryModal";
+import { SkeletonRow } from "@/app/components/Skeleton";
 import { UseTransactionsReturn } from "@/app/hooks/useTransactions";
 
 interface TransactionsTabProps {
@@ -107,36 +108,42 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
 
       {/* Daftar transaksi (terpaginasi) */}
       <div className="flex flex-col gap-2 bg-white/50">
-        {txn.paginated.map((t) => (
-          <TransactionItem
-            key={t.id}
-            transaction={t}
-            categories={txn.categories}
-            variant="full"
-            onEdit={onEdit}
-            onDelete={txn.deleteTransaction}
-          />
-        ))}
+        {txn.loading ? (
+          Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+        ) : (
+          <>
+            {txn.paginated.map((t) => (
+              <TransactionItem
+                key={t.id}
+                transaction={t}
+                categories={txn.categories}
+                variant="full"
+                onEdit={onEdit}
+                onDelete={txn.deleteTransaction}
+              />
+            ))}
 
-        {txn.paginated.length === 0 &&
-          (txn.transactions.length === 0 ? (
-            <div className="text-center py-15 text-muted-light text-sm">
-              Belum ada transaksi. Klik &ldquo;Transaksi Baru&rdquo; untuk menambahkan.
-            </div>
-          ) : (
-            <div className="text-center py-15 text-sm">
-              <div className="text-4xl mb-3">🔍</div>
-              <div className="text-dark font-medium mb-1">
-                Tidak ada transaksi yang cocok dengan filter
-              </div>
-              <button
-                onClick={txn.resetFilters}
-                className="mt-2 text-accent font-medium cursor-pointer bg-transparent border-none text-[13px] hover:underline"
-              >
-                Reset semua filter
-              </button>
-            </div>
-          ))}
+            {txn.paginated.length === 0 &&
+              (txn.transactions.length === 0 ? (
+                <div className="text-center py-15 text-muted-light text-sm">
+                  Belum ada transaksi. Klik &ldquo;Transaksi Baru&rdquo; untuk menambahkan.
+                </div>
+              ) : (
+                <div className="text-center py-15 text-sm">
+                  <div className="text-4xl mb-3">🔍</div>
+                  <div className="text-dark font-medium mb-1">
+                    Tidak ada transaksi yang cocok dengan filter
+                  </div>
+                  <button
+                    onClick={txn.resetFilters}
+                    className="mt-2 text-accent font-medium cursor-pointer bg-transparent border-none text-[13px] hover:underline"
+                  >
+                    Reset semua filter
+                  </button>
+                </div>
+              ))}
+          </>
+        )}
       </div>
 
       {/* Pagination */}
