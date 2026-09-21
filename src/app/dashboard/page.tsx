@@ -94,7 +94,7 @@ export default function FinancialTracker() {
           )}
 
           {nav.activeTab === "budget" && (
-            <BudgetTab budget={bgt} />
+            <BudgetTab budget={bgt} categories={txn.categories} />
           )}
 
           {nav.activeTab === "todos" && (

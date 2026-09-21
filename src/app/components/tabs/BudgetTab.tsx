@@ -1,18 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { UseBudgetsReturn } from '@/app/hooks/useBudgets';
 import { BudgetCard } from '@/app/components/BudgetCard';
 import { BudgetModal } from '@/app/components/BudgetModal';
-import { Budget } from '@/app/types';
+import { Budget, Category } from '@/app/types';
 import { fmt } from '@/app/utils/format';
 
 interface BudgetTabProps {
   budget: UseBudgetsReturn;
+  categories?: Category[];
 }
 
-export function BudgetTab({ budget }: BudgetTabProps) {
+export function BudgetTab({ budget, categories }: BudgetTabProps) {
   const [showModal, setShowModal] = useState(false);
+
+  const cats = categories ?? budget.categories;
+  const categoryKey = useMemo(() => cats.map((c) => c.id).join(','), [cats]);
+  const refreshBudgets = budget.refreshBudgets;
+
+  // Kategori bisa ditambah/dihapus dari tab Transaksi; sinkronkan ulang daftar
+  // budget agar baris yang ikut terhapus (cascade) tidak tertinggal di UI.
+  useEffect(() => {
+    refreshBudgets();
+  }, [categoryKey, refreshBudgets]);
 
   const handleOpenAdd = () => {
     budget.cancelEdit();
@@ -111,7 +122,7 @@ export function BudgetTab({ budget }: BudgetTabProps) {
       {showModal && (
         <BudgetModal
           form={budget.form}
-          categories={budget.categories}
+          categories={cats}
           onFormChange={budget.setForm}
           onSubmit={handleSubmit}
           onClose={handleClose}

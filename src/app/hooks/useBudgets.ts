@@ -182,6 +182,7 @@ export function useBudgets() {
     startEdit,
     saveEdit,
     cancelEdit,
+    refreshBudgets: fetchBudgets,
   };
 }
 
