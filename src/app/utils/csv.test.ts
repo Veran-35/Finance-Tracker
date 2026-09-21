@@ -125,4 +125,31 @@ describe('csvToTransactions', () => {
     expect(rows).toHaveLength(1);
     expect(skipped).toBe(2);
   });
+
+  it('forward-fills a missing date from the previous dated row', () => {
+    const csv = [
+      'NO,Tanggal,Kegiatan,Debet (Rp),Kredit (Rp),Keterangan,Bank',
+      '1,2026-09-05,Bakso,,25000,Makanan,',
+      '2,,Gaji,5000000,,,',
+    ].join('\r\n');
+    const { rows, skipped } = csvToTransactions(csv, categories);
+    expect(skipped).toBe(0);
+    expect(rows).toHaveLength(2);
+    const gaji = rows.find((r) => r.description === 'Gaji')!;
+    expect(gaji.date).toBe('2026-09-05');
+    expect(gaji.type).toBe('income');
+    expect(gaji.amount).toBe('5000000');
+  });
+
+  it('silently ignores note rows that have no amount', () => {
+    const csv = [
+      'NO,Tanggal,Kegiatan,Debet (Rp),Kredit (Rp),Keterangan,Bank',
+      '1,2026-09-05,Catatan piutang,,,,,',
+      '2,2026-09-06,Bakso,,25000,Makanan,',
+    ].join('\r\n');
+    const { rows, skipped } = csvToTransactions(csv, categories);
+    expect(skipped).toBe(0);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].description).toBe('Bakso');
+  });
 });

@@ -216,21 +216,17 @@ export function rowsToTransactions(
   const otherCategory = categories.find((c) => c.name === OTHER_CATEGORY_NAME);
   const byName = new Map(categories.map((c) => [normalize(c.name), c.id]));
 
+  let lastDate: string | null = null;
+
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.every((c) => !c)) continue;
 
-    const date = iTanggal >= 0 ? parseImportDate(r[iTanggal] || '') : null;
-    if (!date) {
-      result.skipped++;
-      continue;
-    }
+    // Tanggal baris ini; simpan sebagai kandidat forward-fill untuk baris lanjutan.
+    const ownDate = iTanggal >= 0 ? parseImportDate(r[iTanggal] || '') : null;
+    if (ownDate) lastDate = ownDate;
 
     const description = (iKegiatan >= 0 ? r[iKegiatan] : '') || '';
-    if (!description.trim()) {
-      result.skipped++;
-      continue;
-    }
 
     let type: 'income' | 'expense';
     let amount: number;
@@ -239,7 +235,7 @@ export function rowsToTransactions(
       const debet = iDebet >= 0 ? parseAmount(r[iDebet] || '') : 0;
       const kredit = iKredit >= 0 ? parseAmount(r[iKredit] || '') : 0;
       if (debet === 0 && kredit === 0) {
-        result.skipped++;
+        // Baris tanpa nominal = catatan/piutang, bukan transaksi. Lewati diam-diam.
         continue;
       }
       // Debet = uang masuk (income), Kredit = uang keluar (expense).
@@ -252,11 +248,20 @@ export function rowsToTransactions(
         t.includes('masuk') || t.includes('income') || t.includes('pemasukan')
           ? 'income'
           : 'expense';
-      if (amount === 0) {
-        result.skipped++;
-        continue;
-      }
+      if (amount === 0) continue;
     } else {
+      continue;
+    }
+
+    // Baris bernominal wajib punya keterangan (kolom description NOT NULL di DB).
+    if (!description.trim()) {
+      result.skipped++;
+      continue;
+    }
+
+    // Forward-fill: baris lanjutan tanpa tanggal mewarisi tanggal baris sebelumnya.
+    const date = ownDate || lastDate;
+    if (!date) {
       result.skipped++;
       continue;
     }
