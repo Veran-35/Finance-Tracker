@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Transaction } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { CategoryModal } from "@/app/components/CategoryModal";
 import { SkeletonRow } from "@/app/components/Skeleton";
+import { useToast } from "@/app/components/Toast";
+import {
+  transactionsToCsv,
+  downloadCsv,
+  csvToTransactions,
+} from "@/app/utils/csv";
 import { UseTransactionsReturn } from "@/app/hooks/useTransactions";
 
 interface TransactionsTabProps {
@@ -13,6 +19,39 @@ interface TransactionsTabProps {
 
 export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps) {
   const [showCategories, setShowCategories] = useState(false);
+  const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    if (txn.transactions.length === 0) {
+      toast.info("Belum ada transaksi untuk diekspor");
+      return;
+    }
+    const csv = transactionsToCsv(txn.transactions, txn.categories);
+    const today = new Date();
+    const stamp = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    downloadCsv(`transaksi-${stamp}.csv`, csv);
+    toast.success(`${txn.transactions.length} transaksi diekspor ke CSV`);
+  };
+
+  const handleImportFile = async (file: File) => {
+    try {
+      const text = await file.text();
+      const { rows, skipped } = csvToTransactions(text, txn.categories);
+      if (rows.length === 0) {
+        toast.error("Tidak ada baris valid yang bisa diimpor");
+        return;
+      }
+      await txn.addTransactions(rows);
+      toast.success(
+        skipped > 0
+          ? `${rows.length} transaksi diimpor, ${skipped} baris dilewati`
+          : `${rows.length} transaksi diimpor`
+      );
+    } catch {
+      toast.error("Gagal membaca berkas CSV");
+    }
+  };
 
   const filters = [
     { key: "all", label: "Semua" },
@@ -82,6 +121,31 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
         >
           ⚙ Kelola
         </button>
+        <button
+          onClick={handleExport}
+          title="Ekspor transaksi ke CSV (format Excel)"
+          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
+        >
+          ⬇ Ekspor
+        </button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          title="Impor transaksi dari CSV"
+          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
+        >
+          ⬆ Impor
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImportFile(file);
+            e.target.value = "";
+          }}
+        />
         <input
           type="date"
           value={txn.dateFrom}
