@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { TransactionFormData, Category } from "@/app/types";
+import { TransactionFormData, Category, Account } from "@/app/types";
 import { fmt } from "@/app/utils/format";
 
 interface TransactionModalProps {
   form: TransactionFormData;
   categories: Category[];
+  accounts: Account[];
   isEditing?: boolean;
   onFormChange: React.Dispatch<React.SetStateAction<TransactionFormData>>;
   onSubmit: (rows: TransactionFormData[]) => void;
@@ -14,6 +15,7 @@ interface TransactionModalProps {
 export function TransactionModal({
   form,
   categories,
+  accounts,
   isEditing = false,
   onFormChange,
   onSubmit,
@@ -36,6 +38,10 @@ export function TransactionModal({
     const base = categories.find((c) => c.id === categoryId)?.name || "Lainnya";
     const name = custom.trim();
     return name && base === "Lainnya" ? `Lainnya (${name})` : base;
+  }
+
+  function accountLabel(accountId: string) {
+    return accounts.find((a) => a.id === accountId)?.name || "Tanpa Akun";
   }
 
   function addDraft() {
@@ -138,14 +144,28 @@ export function TransactionModal({
                 </option>
               ))}
             </select>
-            <input
-              type="date"
-              required
-              value={form.date}
-              onChange={(e) => onFormChange((f) => ({ ...f, date: e.target.value }))}
+            <select
+              value={form.account_id}
+              onChange={(e) =>
+                onFormChange((f) => ({ ...f, account_id: e.target.value }))
+              }
               className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
-            />
+            >
+              {accounts.length === 0 && <option value="">Tanpa Akun</option>}
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.icon} {a.name}
+                </option>
+              ))}
+            </select>
           </div>
+          <input
+            type="date"
+            required
+            value={form.date}
+            onChange={(e) => onFormChange((f) => ({ ...f, date: e.target.value }))}
+            className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
+          />
 
           {showCustomInput && (
             <input
@@ -177,7 +197,7 @@ export function TransactionModal({
                         {d.description}
                       </div>
                       <div className="text-[11px] text-muted-light">
-                        {categoryLabel(d.category_id, d.custom_category)} · {d.date}
+                        {categoryLabel(d.category_id, d.custom_category)} · {accountLabel(d.account_id)} · {d.date}
                       </div>
                     </div>
                     <div

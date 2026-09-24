@@ -1,12 +1,13 @@
 import * as XLSX from 'xlsx';
 import { rowsToTransactions, type CsvImportResult, type ImportCell } from '@/app/utils/csv';
-import type { Category } from '@/app/types';
+import type { Category, Account } from '@/app/types';
 
 // Baca workbook .xlsx/.xls: gabungkan transaksi dari semua sheet (satu sheet per bulan).
 // cellDates:true membuat sel tanggal Excel jadi objek Date, bukan angka serial.
 export function xlsxToTransactions(
   data: ArrayBuffer | Uint8Array,
-  categories: Category[]
+  categories: Category[],
+  accounts: Account[]
 ): CsvImportResult {
   const wb = XLSX.read(data, { cellDates: true });
   const result: CsvImportResult = { rows: [], skipped: 0 };
@@ -22,7 +23,7 @@ export function xlsxToTransactions(
       blankrows: false,
     });
 
-    const part = rowsToTransactions(aoa, categories);
+    const part = rowsToTransactions(aoa, categories, accounts);
     result.rows.push(...part.rows);
     result.skipped += part.skipped;
   }

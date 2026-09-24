@@ -113,6 +113,7 @@ export default function FinancialTracker() {
               expenseByCategory={txn.expenseByCategory}
               transactions={txn.transactions}
               categories={txn.categories}
+              accounts={txn.accounts}
               loading={txn.loading}
             />
           )}
@@ -149,6 +150,7 @@ export default function FinancialTracker() {
         <TransactionModal
           form={txn.form}
           categories={txn.categories}
+          accounts={txn.accounts}
           isEditing={!!txn.editingId}
           onFormChange={txn.setForm}
           onSubmit={(rows) => {

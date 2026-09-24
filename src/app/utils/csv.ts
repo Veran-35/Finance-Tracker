@@ -1,4 +1,4 @@
-import { Transaction, Category, TransactionFormData } from '@/app/types';
+import { Transaction, Category, Account, TransactionFormData } from '@/app/types';
 
 // Kolom mengikuti workbook Excel milik user (catatan_keuangan_2026.xlsx):
 // Debet = uang masuk (income), Kredit = uang keluar (expense).
@@ -70,10 +70,12 @@ function escapeCell(value: string): string {
 
 export function transactionsToCsv(
   transactions: Transaction[],
-  categories: Category[]
+  categories: Category[],
+  accounts: Account[]
 ): string {
   const catName = (id: string) =>
     categories.find((c) => c.id === id)?.name || OTHER_CATEGORY_NAME;
+  const accName = (id: string) => accounts.find((a) => a.id === id)?.name || '';
 
   const sorted = transactions
     .slice()
@@ -90,7 +92,7 @@ export function transactionsToCsv(
         isIncome ? String(t.amount) : '',
         isIncome ? '' : String(t.amount),
         escapeCell(catName(t.category_id)),
-        '',
+        escapeCell(accName(t.account_id)),
       ].join(',')
     );
   });
@@ -190,7 +192,8 @@ function normalize(s: string) {
 // Petakan baris (dari CSV atau XLSX) -> form transaksi. Kolom dicari lewat header (fleksibel).
 export function rowsToTransactions(
   rawRows: ImportCell[][],
-  categories: Category[]
+  categories: Category[],
+  accounts: Account[]
 ): CsvImportResult {
   const rows = rawRows.map((r) => r.map(cellToString));
   const result: CsvImportResult = { rows: [], skipped: 0 };
@@ -210,11 +213,17 @@ export function rowsToTransactions(
   const iDebet = col('debet', 'debit');
   const iKredit = col('kredit', 'credit');
   const iKeterangan = col('keterangan');
+  const iBank = col('bank');
   const iType = col('tipe', 'type', 'jenis');
   const iAmount = col('amount', 'nominal', 'jumlah');
 
   const otherCategory = categories.find((c) => c.name === OTHER_CATEGORY_NAME);
   const byName = new Map(categories.map((c) => [normalize(c.name), c.id]));
+  const accountByName = new Map(accounts.map((a) => [normalize(a.name), a.id]));
+  const fallbackAccountId =
+    accounts.find((a) => normalize(a.name) === 'bca')?.id ||
+    accounts[0]?.id ||
+    '';
 
   let lastDate: string | null = null;
 
@@ -274,11 +283,27 @@ export function rowsToTransactions(
       customCategory = note && otherCategory ? note : '';
     }
 
+    const bankRaw = iBank >= 0 ? (r[iBank] || '').trim() : '';
+    let accountId = '';
+    let customAccount = '';
+    if (!bankRaw) {
+      accountId = fallbackAccountId;
+    } else {
+      const found = accountByName.get(normalize(bankRaw));
+      if (found) {
+        accountId = found;
+      } else {
+        customAccount = bankRaw;
+      }
+    }
+
     result.rows.push({
       type,
       amount: String(amount),
       category_id: categoryId,
       custom_category: customCategory,
+      account_id: accountId,
+      custom_account: customAccount,
       description,
       date,
     });
@@ -290,7 +315,8 @@ export function rowsToTransactions(
 // Impor dari teks CSV: parse dulu jadi baris, lalu petakan.
 export function csvToTransactions(
   text: string,
-  categories: Category[]
+  categories: Category[],
+  accounts: Account[]
 ): CsvImportResult {
-  return rowsToTransactions(parseCsv(text), categories);
+  return rowsToTransactions(parseCsv(text), categories, accounts);
 }

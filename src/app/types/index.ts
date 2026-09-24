@@ -5,6 +5,7 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   category_id: string;
+  account_id: string;
   description: string;
   date: string;
 }
@@ -12,6 +13,16 @@ export interface Transaction {
 export interface Category {
   id: string;
   name: string;
+  color: string;
+  icon: string;
+}
+
+export type AccountType = "bank" | "ewallet";
+
+export interface Account {
+  id: string;
+  name: string;
+  type: AccountType;
   color: string;
   icon: string;
 }
@@ -42,6 +53,8 @@ export interface TransactionFormData {
   amount: string;
   category_id: string;
   custom_category: string;
+  account_id: string;
+  custom_account: string;
   description: string;
   date: string;
 }

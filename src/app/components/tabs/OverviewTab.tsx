@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Transaction, Category } from "@/app/types";
+import { Transaction, Category, Account, AccountType } from "@/app/types";
 import { StatCard } from "@/app/components/StatCard";
 import DonutChart from "@/app/components/DonutChart";
 import { MiniBar } from "@/app/components/MiniBar";
@@ -23,6 +23,7 @@ interface OverviewTabProps {
   expenseByCategory: { id: string; value: number; name: string; color: string; icon: string }[];
   transactions: Transaction[];
   categories: Category[];
+  accounts: Account[];
   loading?: boolean;
 }
 
@@ -59,10 +60,68 @@ function aggregateByCategory(
     .sort((a, b) => b.value - a.value);
 }
 
+const NONE_ACCOUNT_ID = "__none__";
+
+interface AccountRow {
+  id: string;
+  name: string;
+  type: AccountType;
+  color: string;
+  icon: string;
+  cumulative: number;
+  periodNet: number;
+}
+
+function aggregateByAccount(
+  transactions: Transaction[],
+  accounts: Account[],
+  prefix: string
+): AccountRow[] {
+  const cum: Record<string, number> = {};
+  const per: Record<string, number> = {};
+
+  accounts.forEach((a) => {
+    cum[a.id] = 0;
+    per[a.id] = 0;
+  });
+
+  for (const t of transactions) {
+    const key = t.account_id || NONE_ACCOUNT_ID;
+    const signed = t.type === "income" ? t.amount : -t.amount;
+    cum[key] = (cum[key] || 0) + signed;
+    if (t.date.startsWith(prefix)) {
+      per[key] = (per[key] || 0) + signed;
+    }
+  }
+
+  const meta = (id: string) => {
+    const a = accounts.find((x) => x.id === id);
+    if (a) {
+      return { name: a.name, type: a.type, color: a.color, icon: a.icon || "🏦" };
+    }
+    return {
+      name: "Tanpa Akun",
+      type: "bank" as AccountType,
+      color: "#9CA3AF",
+      icon: "❔",
+    };
+  };
+
+  return Object.keys(cum)
+    .map((id) => ({
+      id,
+      ...meta(id),
+      cumulative: cum[id],
+      periodNet: per[id] || 0,
+    }))
+    .sort((a, b) => b.cumulative - a.cumulative);
+}
+
 export function OverviewTab({
   balance,
   transactions,
   categories,
+  accounts,
   loading = false,
 }: OverviewTabProps) {
   const [period, setPeriod] = useState(currentMonthPrefix);
@@ -91,6 +150,16 @@ export function OverviewTab({
   const periodByCategory = useMemo(
     () => aggregateByCategory(transactions, categories, period),
     [transactions, categories, period]
+  );
+
+  const accountRows = useMemo(
+    () => aggregateByAccount(transactions, accounts, period),
+    [transactions, accounts, period]
+  );
+
+  const maxAbsBalance = useMemo(
+    () => Math.max(1, ...accountRows.map((r) => Math.abs(r.cumulative))),
+    [accountRows]
   );
 
   const prevByCategory = useMemo(() => {
@@ -273,6 +342,79 @@ export function OverviewTab({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Saldo per Bank / E-Wallet */}
+      <div className="bg-white border border-border rounded-2xl p-5.5 mb-6">
+        <div className="text-[13px] font-semibold text-dark mb-1">
+          Saldo per Bank / E-Wallet
+        </div>
+        <div className="text-xs text-muted-light mb-3.5">
+          Saldo kumulatif sepanjang waktu, plus perubahan netto pada {monthLabel(period)}.
+        </div>
+
+        {accountRows.length > 0 ? (
+          <>
+            <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.06em] text-muted-lighter mb-1.5 px-3">
+              <span>Akun</span>
+              <span className="text-right">Saldo · Netto {monthLabel(period)}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {accountRows.map((r) => {
+                const netUp = r.periodNet >= 0;
+                return (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-cream/60 border border-border"
+                  >
+                    <div
+                      className="w-[38px] h-[38px] rounded-[10px] text-lg flex items-center justify-center shrink-0"
+                      style={{ background: r.color + "20" }}
+                    >
+                      {r.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[13px] font-medium text-dark truncate">
+                          {r.name}
+                        </span>
+                        <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-border text-muted-light shrink-0">
+                          {r.type === "ewallet" ? "E-Wallet" : "Bank"}
+                        </span>
+                      </div>
+                      <div className="mt-1.5">
+                        <MiniBar
+                          value={Math.abs(r.cumulative)}
+                          max={maxAbsBalance}
+                          color={r.color}
+                        />
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div
+                        className={`text-sm font-semibold ${
+                          r.cumulative >= 0 ? "text-dark" : "text-accent"
+                        }`}
+                      >
+                        {fmt(r.cumulative)}
+                      </div>
+                      <div
+                        className="text-[11px] font-medium mt-0.5"
+                        style={{ color: netUp ? "#2A9D8F" : "#E76F51" }}
+                        title={`Netto ${monthLabel(period)}`}
+                      >
+                        {netUp ? "+" : "−"}
+                        {fmt(Math.abs(r.periodNet))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="text-xs text-muted text-center py-6">Belum ada akun</div>
+        )}
       </div>
 
       {/* Month-over-month category insight */}

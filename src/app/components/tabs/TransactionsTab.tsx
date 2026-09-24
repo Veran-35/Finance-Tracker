@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Transaction, TransactionFormData } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { CategoryModal } from "@/app/components/CategoryModal";
+import { AccountModal } from "@/app/components/AccountModal";
 import { SkeletonRow } from "@/app/components/Skeleton";
 import { useToast } from "@/app/components/Toast";
 import {
@@ -19,6 +20,7 @@ interface TransactionsTabProps {
 
 export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps) {
   const [showCategories, setShowCategories] = useState(false);
+  const [showAccounts, setShowAccounts] = useState(false);
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +29,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
       toast.info("Belum ada transaksi untuk diekspor");
       return;
     }
-    const csv = transactionsToCsv(txn.transactions, txn.categories);
+    const csv = transactionsToCsv(txn.transactions, txn.categories, txn.accounts);
     const today = new Date();
     const stamp = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     downloadCsv(`transaksi-${stamp}.csv`, csv);
@@ -49,10 +51,10 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
         // Dynamic import: SheetJS hanya dimuat saat benar-benar impor Excel.
         const { xlsxToTransactions } = await import("@/app/utils/xlsx");
         const buffer = await file.arrayBuffer();
-        ({ rows, skipped } = xlsxToTransactions(buffer, txn.categories));
+        ({ rows, skipped } = xlsxToTransactions(buffer, txn.categories, txn.accounts));
       } else {
         const text = await file.text();
-        ({ rows, skipped } = csvToTransactions(text, txn.categories));
+        ({ rows, skipped } = csvToTransactions(text, txn.categories, txn.accounts));
       }
 
       if (rows.length === 0) {
@@ -139,6 +141,12 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           ⚙ Kelola
         </button>
         <button
+          onClick={() => setShowAccounts(true)}
+          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
+        >
+          🏦 Kelola Bank
+        </button>
+        <button
           onClick={handleExport}
           title="Ekspor transaksi ke CSV (format Excel)"
           className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
@@ -198,6 +206,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
                 key={t.id}
                 transaction={t}
                 categories={txn.categories}
+                accounts={txn.accounts}
                 variant="full"
                 onEdit={onEdit}
                 onDelete={txn.deleteTransaction}
@@ -256,6 +265,17 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           transactions={txn.transactions}
           onDelete={txn.deleteCategory}
           onClose={() => setShowCategories(false)}
+        />
+      )}
+
+      {showAccounts && (
+        <AccountModal
+          accounts={txn.accounts}
+          transactions={txn.transactions}
+          onAdd={txn.addAccount}
+          onUpdate={txn.updateAccount}
+          onDelete={txn.deleteAccount}
+          onClose={() => setShowAccounts(false)}
         />
       )}
     </div>

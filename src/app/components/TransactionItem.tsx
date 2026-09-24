@@ -1,4 +1,4 @@
-import { Transaction, Category } from "@/app/types";
+import { Transaction, Category, Account } from "@/app/types";
 import { fmt, fmtShort } from "@/app/utils/format";
 
 const FALLBACK_CATEGORY: Category = { name: "Lainnya", color: "#aaa", icon: "📦", id: "0" };
@@ -6,13 +6,15 @@ const FALLBACK_CATEGORY: Category = { name: "Lainnya", color: "#aaa", icon: "�
 interface TransactionItemProps {
   transaction: Transaction;
   categories?: Category[];
+  accounts?: Account[];
   variant?: "compact" | "full";
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (id: string) => void;
 }
 
-export function TransactionItem({ transaction: t, categories = [], variant = "compact", onEdit, onDelete }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, categories = [], accounts = [], variant = "compact", onEdit, onDelete }: TransactionItemProps) {
   const cat = categories.find(c => c.id === t.category_id) || FALLBACK_CATEGORY;
+  const accountName = accounts.find(a => a.id === t.account_id)?.name;
   const isCompact = variant === "compact";
 
   return (
@@ -26,7 +28,7 @@ export function TransactionItem({ transaction: t, categories = [], variant = "co
       <div className="flex-1">
         <div className="text-sm font-medium text-dark">{t.description}</div>
         <div className={`text-xs text-muted-light ${isCompact ? "" : "mt-0.5"}`}>
-          {cat.name} · {t.date}
+          {cat.name}{accountName ? ` · ${accountName}` : ""} · {t.date}
         </div>
       </div>
       <div className="text-right flex items-center gap-3">
