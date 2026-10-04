@@ -3,25 +3,30 @@ import { TransactionFormData, Category, Account } from "@/app/types";
 import { fmt } from "@/app/utils/format";
 
 interface TransactionModalProps {
+  open: boolean;
   form: TransactionFormData;
   categories: Category[];
   accounts: Account[];
   isEditing?: boolean;
   onFormChange: React.Dispatch<React.SetStateAction<TransactionFormData>>;
   onSubmit: (rows: TransactionFormData[]) => void;
-  onClose: () => void;
+  onBackdrop: () => void;
+  onDiscard: () => void;
 }
 
 export function TransactionModal({
+  open,
   form,
   categories,
   accounts,
   isEditing = false,
   onFormChange,
   onSubmit,
-  onClose,
+  onBackdrop,
+  onDiscard,
 }: TransactionModalProps) {
   const [drafts, setDrafts] = useState<TransactionFormData[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const isCurrentValid = form.amount !== "" && form.description.trim() !== "";
   const rowCount = isEditing ? 1 : drafts.length + (isCurrentValid ? 1 : 0);
@@ -62,11 +67,21 @@ export function TransactionModal({
     const rows = isCurrentValid ? [...drafts, form] : drafts;
     if (rows.length === 0) return;
     onSubmit(rows);
+    setDrafts([]);
   }
+
+  function handleDiscard() {
+    setConfirmOpen(false);
+    setDrafts([]);
+    onDiscard();
+  }
+
+  // Tetap mounted saat tertutup supaya draft & progres form tidak hilang.
+  if (!open) return null;
 
   return (
     <div
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && onBackdrop()}
       className="fixed inset-0 bg-dark/45 backdrop-blur-sm flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-out]"
     >
       <div className="bg-cream rounded-2xl p-6 w-full max-w-[480px] mx-5 max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-[slideUp_0.3s_ease-out]">
@@ -76,7 +91,8 @@ export function TransactionModal({
             {isEditing ? "✏️ Edit Transaksi" : "Tambah Transaksi"}
           </div>
           <button
-            onClick={onClose}
+            onClick={() => setConfirmOpen(true)}
+            aria-label="Tutup"
             className="border-none bg-border rounded-lg w-8 h-8 cursor-pointer text-lg text-[#5A5550] leading-none hover:bg-border-dark transition-colors"
           >
             ×
@@ -253,6 +269,46 @@ export function TransactionModal({
           )}
         </form>
       </div>
+
+      {/* Dialog konfirmasi keluar tanpa simpan */}
+      {confirmOpen && (
+        <div
+          onClick={(e) => e.target === e.currentTarget && setConfirmOpen(false)}
+          className="fixed inset-0 bg-dark/60 backdrop-blur-sm flex items-center justify-center z-[60] animate-[fadeIn_0.2s_ease-out]"
+        >
+          <div className="bg-cream rounded-2xl p-6 w-full max-w-[360px] mx-5 shadow-[0_20px_60px_rgba(0,0,0,0.25)] animate-[slideUp_0.3s_ease-out]">
+            <div className="text-lg font-semibold font-display mb-2">
+              Keluar tanpa simpan?
+            </div>
+            <div className="text-[13px] text-muted-light leading-relaxed mb-5">
+              Transaksi yang sedang kamu isi belum disimpan.
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDiscard}
+                className="flex-1 py-2.5 border-[1.5px] border-border-dark rounded-[10px] bg-white text-[#6B6560] text-sm font-semibold cursor-pointer transition-all hover:bg-border/30"
+              >
+                Ya
+              </button>
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="flex-1 py-2.5 border-[1.5px] border-border-dark rounded-[10px] bg-white text-[#6B6560] text-sm font-semibold cursor-pointer transition-all hover:bg-border/30"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  handleSubmit();
+                }}
+                className="flex-1 py-2.5 border-none rounded-[10px] bg-gradient-accent text-white text-sm font-semibold cursor-pointer shadow-accent ring-2 ring-accent/40 transition-all hover:shadow-accent-lg"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

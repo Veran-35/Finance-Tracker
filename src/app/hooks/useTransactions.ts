@@ -715,6 +715,11 @@ export function useTransactions() {
     });
   }
 
+  // Keluar dari mode edit tanpa mereset form, supaya progres entrian tetap ada.
+  function stopEditing() {
+    setEditingId(null);
+  }
+
   return {
     transactions,
     loading,
@@ -749,6 +754,7 @@ export function useTransactions() {
     updateTransaction,
     startEdit,
     cancelEdit,
+    stopEditing,
     deleteTransaction,
     addCategory,
     deleteCategory,

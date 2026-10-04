@@ -53,7 +53,7 @@ export default function FinancialTracker() {
         icon: "💸",
         hint: "⏎",
         run: () => {
-          txn.cancelEdit();
+          txn.stopEditing();
           nav.setActiveTab("transaksi");
           nav.setShowModal(true);
         },
@@ -126,7 +126,7 @@ export default function FinancialTracker() {
                 nav.setShowModal(true);
               }}
               onAddNew={() => {
-                txn.cancelEdit();
+                txn.stopEditing();
                 nav.setShowModal(true);
               }}
             />
@@ -146,27 +146,31 @@ export default function FinancialTracker() {
         </main>
       </div>
 
-      {nav.showModal && (
-        <TransactionModal
-          form={txn.form}
-          categories={txn.categories}
-          accounts={txn.accounts}
-          isEditing={!!txn.editingId}
-          onFormChange={txn.setForm}
-          onSubmit={(rows) => {
-            if (txn.editingId) {
-              txn.updateTransaction();
-            } else {
-              txn.addTransactions(rows);
-            }
-            nav.setShowModal(false);
-          }}
-          onClose={() => {
-            txn.cancelEdit();
-            nav.setShowModal(false);
-          }}
-        />
-      )}
+      <TransactionModal
+        open={nav.showModal}
+        form={txn.form}
+        categories={txn.categories}
+        accounts={txn.accounts}
+        isEditing={!!txn.editingId}
+        onFormChange={txn.setForm}
+        onSubmit={(rows) => {
+          if (txn.editingId) {
+            txn.updateTransaction();
+          } else {
+            txn.addTransactions(rows);
+          }
+          nav.setShowModal(false);
+        }}
+        onBackdrop={() => {
+          // Klik di luar modal: tutup tapi progres form & draft tetap tersimpan.
+          if (txn.editingId) txn.cancelEdit();
+          nav.setShowModal(false);
+        }}
+        onDiscard={() => {
+          txn.cancelEdit();
+          nav.setShowModal(false);
+        }}
+      />
 
       {paletteOpen && (
         <CommandPalette
