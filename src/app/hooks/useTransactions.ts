@@ -510,6 +510,36 @@ export function useTransactions() {
     }
   }
 
+  // ─── Add Category ──────────────────────────────────────────────────
+  async function addCategory(input: Omit<Category, 'id'>) {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ user_id: user.id, module: 'finance', ...input })
+        .select('id, name, color, icon')
+        .single();
+
+      if (error) {
+        console.error('Gagal menambah kategori:', error.message);
+        toast.error('Gagal menambah kategori');
+        return;
+      }
+
+      if (data) {
+        setCategories((prev) =>
+          prev.some((c) => c.id === data.id)
+            ? prev
+            : [...prev, data].sort((a, b) => a.name.localeCompare(b.name))
+        );
+        toast.success(`Kategori "${data.name}" ditambahkan`);
+      }
+    } catch (err) {
+      console.error('Gagal menambah kategori:', err);
+    }
+  }
+
   // ─── Delete Category ───────────────────────────────────────────────
   // Di DB: transactions.category_id jadi null (on delete set null) dan budget kategori itu ikut terhapus (cascade).
   async function deleteCategory(id: string) {
@@ -720,6 +750,7 @@ export function useTransactions() {
     startEdit,
     cancelEdit,
     deleteTransaction,
+    addCategory,
     deleteCategory,
     categories,
     accounts,

@@ -4,17 +4,34 @@ import { Category, Transaction } from "@/app/types";
 interface CategoryModalProps {
   categories: Category[];
   transactions: Transaction[];
+  onAdd: (input: Omit<Category, "id">) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
 }
 
+const EMPTY_FORM = {
+  name: "",
+  color: "#6B7280",
+  icon: "🏷️",
+};
+
 export function CategoryModal({
   categories,
   transactions,
+  onAdd,
   onDelete,
   onClose,
 }: CategoryModalProps) {
+  const [form, setForm] = useState(EMPTY_FORM);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    if (!name) return;
+    onAdd({ name, color: form.color, icon: form.icon.trim() || "🏷️" });
+    setForm(EMPTY_FORM);
+  };
 
   return (
     <div
@@ -36,6 +53,62 @@ export function CategoryModal({
           &ldquo;Lainnya&rdquo;, dan budget kategori itu ikut terhapus.
         </div>
 
+        {/* Form tambah kategori */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white border border-border rounded-xl p-3.5 mb-4 flex flex-col gap-3 shrink-0"
+        >
+          <div className="grid grid-cols-[1fr_auto] gap-2.5">
+            <div>
+              <label className="block text-[10px] font-semibold text-[#6B6560] mb-1 tracking-[0.04em]">
+                NAMA *
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="mis. Pendidikan, Hewan Peliharaan…"
+                className="w-full py-2.5 px-3 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-lighter"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-[#6B6560] mb-1 tracking-[0.04em]">
+                IKON
+              </label>
+              <input
+                type="text"
+                value={form.icon}
+                onChange={(e) => setForm({ ...form, icon: e.target.value })}
+                maxLength={4}
+                className="w-[58px] py-2.5 px-2 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark text-center outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto] gap-2.5">
+            <div className="flex items-end">
+              <button
+                type="submit"
+                className="w-full py-2.5 border-none rounded-[10px] bg-gradient-accent text-white text-sm font-semibold cursor-pointer shadow-accent transition-all hover:shadow-accent-lg"
+              >
+                Tambah Kategori
+              </button>
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold text-[#6B6560] mb-1 tracking-[0.04em]">
+                WARNA
+              </label>
+              <input
+                type="color"
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                className="w-[58px] h-[42px] py-1 px-1 border-[1.5px] border-border-dark rounded-[10px] bg-white cursor-pointer"
+              />
+            </div>
+          </div>
+        </form>
+
+        {/* Daftar kategori */}
         <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
           {categories.map((c) => {
             const isBase = c.name === "Lainnya";

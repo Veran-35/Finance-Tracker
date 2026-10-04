@@ -263,6 +263,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
         <CategoryModal
           categories={txn.categories}
           transactions={txn.transactions}
+          onAdd={txn.addCategory}
           onDelete={txn.deleteCategory}
           onClose={() => setShowCategories(false)}
         />
