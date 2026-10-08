@@ -3,6 +3,7 @@ import { Transaction, TransactionFormData } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
 import { CategoryModal } from "@/app/components/CategoryModal";
 import { AccountModal } from "@/app/components/AccountModal";
+import { ExportModal } from "@/app/components/ExportModal";
 import { SkeletonRow } from "@/app/components/Skeleton";
 import { useToast } from "@/app/components/Toast";
 import {
@@ -21,19 +22,29 @@ interface TransactionsTabProps {
 export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps) {
   const [showCategories, setShowCategories] = useState(false);
   const [showAccounts, setShowAccounts] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleExport = () => {
+  const openExport = () => {
     if (txn.transactions.length === 0) {
       toast.info("Belum ada transaksi untuk diekspor");
       return;
     }
-    const csv = transactionsToCsv(txn.transactions, txn.categories, txn.accounts);
-    const today = new Date();
-    const stamp = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    downloadCsv(`transaksi-${stamp}.csv`, csv);
-    toast.success(`${txn.transactions.length} transaksi diekspor ke CSV`);
+    setShowExport(true);
+  };
+
+  const handleExportRange = (from: string, to: string, label: string) => {
+    const filtered = txn.transactions.filter((t) => t.date >= from && t.date <= to);
+    if (filtered.length === 0) {
+      toast.error("Tidak ada transaksi pada periode ini");
+      return;
+    }
+    const csv = transactionsToCsv(filtered, txn.categories, txn.accounts);
+    const slug = label.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+    downloadCsv(`transaksi-${slug}.csv`, csv);
+    toast.success(`${filtered.length} transaksi (${label}) diekspor ke CSV`);
+    setShowExport(false);
   };
 
   const handleImportFile = async (file: File) => {
@@ -147,7 +158,7 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           🏦 Kelola Bank
         </button>
         <button
-          onClick={handleExport}
+          onClick={openExport}
           title="Ekspor transaksi ke CSV (format Excel)"
           className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
         >
@@ -277,6 +288,14 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           onUpdate={txn.updateAccount}
           onDelete={txn.deleteAccount}
           onClose={() => setShowAccounts(false)}
+        />
+      )}
+
+      {showExport && (
+        <ExportModal
+          transactions={txn.transactions}
+          onConfirm={handleExportRange}
+          onClose={() => setShowExport(false)}
         />
       )}
     </div>
