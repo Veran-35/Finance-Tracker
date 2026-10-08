@@ -153,13 +153,12 @@ export default function FinancialTracker() {
         accounts={txn.accounts}
         isEditing={!!txn.editingId}
         onFormChange={txn.setForm}
-        onSubmit={(rows) => {
-          if (txn.editingId) {
-            txn.updateTransaction();
-          } else {
-            txn.addTransactions(rows);
-          }
-          nav.setShowModal(false);
+        onSubmit={async (rows) => {
+          const ok = txn.editingId
+            ? await txn.updateTransaction()
+            : await txn.addTransactions(rows);
+          if (ok) nav.setShowModal(false);
+          return ok;
         }}
         onBackdrop={() => {
           // Klik di luar modal: tutup tapi progres form & draft tetap tersimpan.

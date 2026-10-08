@@ -9,7 +9,7 @@ interface TransactionModalProps {
   accounts: Account[];
   isEditing?: boolean;
   onFormChange: React.Dispatch<React.SetStateAction<TransactionFormData>>;
-  onSubmit: (rows: TransactionFormData[]) => void;
+  onSubmit: (rows: TransactionFormData[]) => Promise<boolean> | boolean;
   onBackdrop: () => void;
   onDiscard: () => void;
 }
@@ -59,15 +59,28 @@ export function TransactionModal({
     setDrafts((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function handleSubmit() {
+  // Klik baris draft: muat kembali ke form supaya bisa diedit.
+  function editDraft(index: number) {
+    const target = drafts[index];
+    if (!target) return;
+    setDrafts((prev) => {
+      const next = prev.slice();
+      if (isCurrentValid) next[index] = { ...form };
+      else next.splice(index, 1);
+      return next;
+    });
+    onFormChange(() => ({ ...target }));
+  }
+
+  async function handleSubmit() {
     if (isEditing) {
-      onSubmit([form]);
+      await onSubmit([form]);
       return;
     }
     const rows = isCurrentValid ? [...drafts, form] : drafts;
     if (rows.length === 0) return;
-    onSubmit(rows);
-    setDrafts([]);
+    const ok = await onSubmit(rows);
+    if (ok) setDrafts([]);
   }
 
   function handleDiscard() {
@@ -203,7 +216,9 @@ export function TransactionModal({
                 return (
                   <div
                     key={`${d.description}-${d.date}-${d.amount}-${i}`}
-                    className="flex items-center gap-2.5 py-2.5 px-3.5 border-b border-border last:border-b-0"
+                    onClick={() => editDraft(i)}
+                    title="Klik untuk edit baris ini"
+                    className="flex items-center gap-2.5 py-2.5 px-3.5 border-b border-border last:border-b-0 cursor-pointer hover:bg-cream/70 transition-colors"
                   >
                     <span className="text-base shrink-0">
                       {d.type === "income" ? "💰" : "💸"}
@@ -226,7 +241,10 @@ export function TransactionModal({
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeDraft(i)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeDraft(i);
+                      }}
                       aria-label={`Hapus ${d.description} dari daftar`}
                       className="border-none bg-transparent text-muted-lighter text-sm cursor-pointer px-1 shrink-0 hover:text-accent transition-colors"
                     >
@@ -265,6 +283,7 @@ export function TransactionModal({
           {!isEditing && (
             <div className="text-[11px] text-muted-lighter text-center">
               Klik &ldquo;+ Tambah ke Daftar&rdquo; untuk menyimpan beberapa transaksi sekaligus.
+              Klik baris pada daftar untuk mengeditnya kembali.
             </div>
           )}
         </form>

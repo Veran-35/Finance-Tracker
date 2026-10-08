@@ -386,11 +386,11 @@ export function useTransactions() {
   }
 
   // ─── Add Transactions (bisa beberapa sekaligus) ────────────────────
-  async function addTransactions(rows: TransactionFormData[]) {
-    if (!user || rows.length === 0) return;
+  async function addTransactions(rows: TransactionFormData[]): Promise<boolean> {
+    if (!user || rows.length === 0) return false;
 
     const valid = rows.filter((r) => r.amount && r.description.trim());
-    if (valid.length === 0) return;
+    if (valid.length === 0) return false;
 
     // Sekuensial: dua baris dengan nama custom baru yang sama tidak boleh insert ganda.
     const catCache = new Map<string, string>();
@@ -421,7 +421,7 @@ export function useTransactions() {
       if (error) {
         console.error('Gagal menambah transaksi:', error.message);
         toast.error('Gagal menambah transaksi');
-        return;
+        return false;
       }
 
       if (data) {
@@ -438,16 +438,19 @@ export function useTransactions() {
             ? 'Transaksi ditambahkan'
             : `${added.length} transaksi ditambahkan`
         );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Gagal menambah transaksi:', err);
+      return false;
     }
   }
 
   // ─── Update Transaction ────────────────────────────────────────────
-  async function updateTransaction() {
+  async function updateTransaction(): Promise<boolean> {
     if (!user || !editingId || !form.amount || !form.description) {
-      return;
+      return false;
     }
 
     const categoryId = await resolveCategoryId(form, new Map());
@@ -471,7 +474,7 @@ export function useTransactions() {
       if (error) {
         console.error('Gagal memperbarui transaksi:', error.message);
         toast.error('Gagal memperbarui transaksi');
-        return;
+        return false;
       }
 
       if (data) {
@@ -481,9 +484,12 @@ export function useTransactions() {
         );
         cancelEdit();
         toast.success('Transaksi diperbarui');
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Gagal memperbarui transaksi:', err);
+      return false;
     }
   }
 
