@@ -130,21 +130,21 @@ export function TransactionModal({
           className="flex flex-col gap-2.5"
         >
           <input
+              type="text"
+              placeholder="Keterangan transaksi"
+              value={form.description}
+              onChange={(e) =>
+                onFormChange((f) => ({ ...f, description: e.target.value }))
+              }
+              className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
+          />
+          <input
             type="number"
             placeholder="Jumlah (Rp)"
             min="1"
             value={form.amount}
             onChange={(e) => onFormChange((f) => ({ ...f, amount: e.target.value }))}
             className="border border-border rounded-[10px] py-3.5 px-4 text-base text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
-          />
-          <input
-            type="text"
-            placeholder="Keterangan transaksi"
-            value={form.description}
-            onChange={(e) =>
-              onFormChange((f) => ({ ...f, description: e.target.value }))
-            }
-            className="border border-border rounded-[10px] py-3.5 px-4 text-sm text-dark bg-white outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all"
           />
           <div className="grid grid-cols-2 gap-2">
             <select
