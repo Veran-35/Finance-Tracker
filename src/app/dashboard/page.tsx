@@ -10,6 +10,7 @@ import { TransactionsTab } from "@/app/components/tabs/TransactionsTab";
 import { BudgetTab } from "@/app/components/tabs/BudgetTab";
 import { TodoTab } from "@/app/components/tabs/TodoTab";
 import { StudyTimerTab } from "@/app/components/tabs/StudyTimerTab";
+import { SettingsTab } from "@/app/components/tabs/SettingsTab";
 import { TransactionModal } from "@/app/components/TransactionModal";
 import { CommandPalette, type Command } from "@/app/components/CommandPalette";
 import { NAV_ITEMS } from "@/app/data/initial-data";
@@ -142,6 +143,10 @@ export default function FinancialTracker() {
 
           {nav.activeTab === "study" && (
             <StudyTimerTab />
+          )}
+
+          {nav.activeTab === "setting" && (
+            <SettingsTab txn={txn} />
           )}
         </main>
       </div>

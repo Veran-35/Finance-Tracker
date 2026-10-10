@@ -4,5 +4,6 @@ export const NAV_ITEMS = [
   { id: "budget", label: "Budget", icon: "🎯" },
   { id: "todos", label: "Todo List", icon: "✅" },
   { id: "study", label: "Study Timer", icon: "📚" },
+  { id: "setting", label: "Pengaturan", icon: "⚙️" },
 ] as const;
 

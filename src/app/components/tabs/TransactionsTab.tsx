@@ -1,8 +1,6 @@
 import { useRef, useState } from "react";
 import { Transaction, TransactionFormData } from "@/app/types";
 import { TransactionItem } from "@/app/components/TransactionItem";
-import { CategoryModal } from "@/app/components/CategoryModal";
-import { AccountModal } from "@/app/components/AccountModal";
 import { ExportModal } from "@/app/components/ExportModal";
 import { SkeletonRow } from "@/app/components/Skeleton";
 import { useToast } from "@/app/components/Toast";
@@ -20,8 +18,6 @@ interface TransactionsTabProps {
 }
 
 export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps) {
-  const [showCategories, setShowCategories] = useState(false);
-  const [showAccounts, setShowAccounts] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -146,18 +142,6 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
           ))}
         </select>
         <button
-          onClick={() => setShowCategories(true)}
-          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
-        >
-          ⚙ Kelola
-        </button>
-        <button
-          onClick={() => setShowAccounts(true)}
-          className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
-        >
-          🏦 Kelola Bank
-        </button>
-        <button
           onClick={openExport}
           title="Ekspor transaksi ke CSV (format Excel)"
           className="rounded-[10px] py-2 px-3.5 text-[13px] font-medium cursor-pointer transition-all duration-150 border border-border bg-white text-[#5A5550] hover:bg-border/50"
@@ -268,27 +252,6 @@ export function TransactionsTab({ txn, onEdit, onAddNew }: TransactionsTabProps)
             Berikutnya ›
           </button>
         </div>
-      )}
-
-      {showCategories && (
-        <CategoryModal
-          categories={txn.categories}
-          transactions={txn.transactions}
-          onAdd={txn.addCategory}
-          onDelete={txn.deleteCategory}
-          onClose={() => setShowCategories(false)}
-        />
-      )}
-
-      {showAccounts && (
-        <AccountModal
-          accounts={txn.accounts}
-          transactions={txn.transactions}
-          onAdd={txn.addAccount}
-          onUpdate={txn.updateAccount}
-          onDelete={txn.deleteAccount}
-          onClose={() => setShowAccounts(false)}
-        />
       )}
 
       {showExport && (
