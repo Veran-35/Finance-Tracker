@@ -61,14 +61,14 @@ export function TodoItem({
         onDrop(todo.id);
       }}
       onDragEnd={onDragEnd}
-      className={`flex items-start gap-3.5 py-4 px-4.5 bg-white rounded-[14px] transition-all duration-250 relative overflow-hidden cursor-grab active:cursor-grabbing hover:border-accent hover:shadow-[0_4px_16px_rgba(231,111,81,0.08)] ${
+      className={`flex items-start gap-3.5 py-4 px-4.5 max-sm:gap-2.5 max-sm:py-3.5 max-sm:px-3 bg-white rounded-[14px] transition-all duration-250 relative overflow-hidden cursor-grab active:cursor-grabbing hover:border-accent hover:shadow-[0_4px_16px_rgba(231,111,81,0.08)] ${
         isOverdue ? "border border-accent/25" : "border border-border"
       } ${isDragOver ? "ring-2 ring-accent/40 border-accent" : ""}`}
       style={{ opacity: todo.is_completed ? 0.65 : 1 }}
     >
       {/* Drag handle */}
       <span
-        className="text-muted-lighter text-base leading-none mt-1 shrink-0 select-none"
+        className="text-muted-lighter text-base leading-none mt-1 shrink-0 select-none max-sm:hidden"
         aria-hidden="true"
       >
         ⠿

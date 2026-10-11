@@ -52,7 +52,7 @@ export function BudgetTab({ budget, categories }: BudgetTabProps) {
   return (
     <div>
       {/* Header Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
         <div className="bg-white rounded-2xl py-4.5 px-5 border border-border flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-xl">🎯</div>
           <div>
@@ -77,7 +77,7 @@ export function BudgetTab({ budget, categories }: BudgetTabProps) {
       </div>
 
       {/* Section Header + Add */}
-      <div className="flex items-center justify-between mb-4 animate-[fadeInUp_0.5s_ease-out]">
+      <div className="flex items-center justify-between gap-2 max-sm:flex-wrap mb-4 animate-[fadeInUp_0.5s_ease-out]">
         <div className="text-[13px] font-semibold text-muted uppercase tracking-[0.06em]">
           Monitoring Budget
         </div>

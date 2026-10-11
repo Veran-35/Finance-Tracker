@@ -65,7 +65,7 @@ export function TodoTab({ todo }: TodoTabProps) {
   return (
     <div>
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-7 animate-[fadeInUp_0.4s_ease-out]">
         {[
           {
             label: "Total",
@@ -108,12 +108,12 @@ export function TodoTab({ todo }: TodoTabProps) {
 
       {/* Filter Bar + Add Button */}
       <div className="flex items-center justify-between mb-5 animate-[fadeInUp_0.5s_ease-out]  max-md:flex-col">
-        <div className="flex gap-1.5 bg-[#F0EDE8] rounded-[10px] p-1">
+        <div className="flex gap-1.5 bg-[#F0EDE8] rounded-[10px] p-1 max-md:w-full">
           {filters.map((f) => (
             <button
               key={f.key}
               onClick={() => todo.setFilter(f.key)}
-              className={`py-2 px-4 border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 flex items-center gap-1.5 ${
+              className={`py-2 px-4 max-md:flex-1 max-md:justify-center max-md:px-2 border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 flex items-center gap-1.5 ${
                 todo.filter === f.key
                   ? "bg-white text-dark shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
                   : "bg-transparent text-muted hover:bg-accent/[0.06]"
@@ -133,7 +133,7 @@ export function TodoTab({ todo }: TodoTabProps) {
           ))}
         </div>
 
-        <div className="flex items-center gap-3 max-md:mt-5">
+        <div className="flex items-center gap-3 max-md:mt-3 max-md:w-full max-md:justify-between">
           <div className="flex items-center gap-2">
             <label
               htmlFor="reminder-days"

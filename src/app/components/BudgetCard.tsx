@@ -22,7 +22,7 @@ export function BudgetCard({ budget: b, onEdit, onDelete }: BudgetCardProps) {
             : "border border-border"
       }`}
     >
-      <div className="flex justify-between items-center mb-3.5">
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-3.5">
         <div className="flex items-center gap-3">
           <div
             className="w-[42px] h-[42px] rounded-[11px] flex items-center justify-center text-xl"
@@ -30,8 +30,8 @@ export function BudgetCard({ budget: b, onEdit, onDelete }: BudgetCardProps) {
           >
             {b.category_icon}
           </div>
-          <div>
-            <div className="text-[15px] font-semibold text-dark flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="text-[15px] font-semibold text-dark flex items-center gap-2 flex-wrap">
               {b.category_name}
               {warn && (
                 <span className="text-[10px] font-semibold text-[#F4A261] bg-[#F4A261]/12 py-0.5 px-2 rounded-md">
@@ -42,7 +42,7 @@ export function BudgetCard({ budget: b, onEdit, onDelete }: BudgetCardProps) {
             <div className="text-xs text-muted-light">Budget {fmt(b.limit)}</div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0 ml-auto">
           <div className="text-right">
             <div className={`text-base font-semibold ${over ? "text-accent" : warn ? "text-[#F4A261]" : "text-dark"}`}>{fmt(b.spent)}</div>
             <div className={`text-[11px] ${over ? "text-accent" : "text-muted-light"}`}>
