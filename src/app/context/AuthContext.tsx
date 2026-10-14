@@ -6,7 +6,7 @@ import { supabase } from '@/app/lib/supabase/client';
 
 interface SignUpProfile {
   username: string;
-  avatar: string;
+  avatar?: string;
   birthDate: string;
   gender: string;
 }

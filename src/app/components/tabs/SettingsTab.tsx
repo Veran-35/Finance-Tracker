@@ -28,7 +28,7 @@ const ENTRIES: { key: Panel; icon: string; title: string; desc: string }[] = [
 
 export function SettingsTab({ txn }: SettingsTabProps) {
   const [open, setOpen] = useState<Panel | null>(null);
-  const { profile, loading, saving, error, saveProfile } = useProfile();
+  const { profile, loading, saving, error, saveProfile, uploadAvatar } = useProfile();
 
   return (
     <div className="max-w-[640px]">
@@ -49,7 +49,12 @@ export function SettingsTab({ txn }: SettingsTabProps) {
             halaman ini.
           </div>
         ) : profile ? (
-          <ProfileForm initial={profile} saving={saving} onSave={saveProfile} />
+          <ProfileForm
+            initial={profile}
+            saving={saving}
+            onSave={saveProfile}
+            onUpload={uploadAvatar}
+          />
         ) : (
           <div className="text-xs text-muted-light bg-white border border-border rounded-xl p-4">
             Profil tidak ditemukan.

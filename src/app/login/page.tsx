@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
-import { AVATAR_PRESETS } from '@/app/data/avatar-presets';
 
 type AuthMode = 'login' | 'register';
 
@@ -19,7 +18,6 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
-  const [avatar, setAvatar] = useState('🙂');
   const [birthDate, setBirthDate] = useState('');
   const [gender, setGender] = useState('');
 
@@ -73,7 +71,6 @@ export default function LoginPage() {
       }
       const { error } = await signUp(email, password, {
         username: name,
-        avatar,
         birthDate,
         gender,
       });
@@ -236,27 +233,6 @@ export default function LoginPage() {
                     maxLength={24}
                     className="w-full py-3.5 px-4 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-lighter"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">AVATAR</label>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {AVATAR_PRESETS.map((em) => (
-                      <button
-                        key={em}
-                        type="button"
-                        onClick={() => setAvatar(em)}
-                        aria-label={`Pilih avatar ${em}`}
-                        className={`w-10 h-10 rounded-[10px] cursor-pointer text-lg flex items-center justify-center transition-all border-[1.5px] ${
-                          avatar === em
-                            ? 'border-accent bg-accent/10'
-                            : 'border-border bg-white hover:bg-border/40'
-                        }`}
-                      >
-                        {em}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

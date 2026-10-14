@@ -86,5 +86,31 @@ export function useProfile() {
     return true;
   }
 
-  return { profile, loading, saving, error, saveProfile };
+  async function uploadAvatar(file: File): Promise<string | null> {
+    if (!user) return null;
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      return null;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran gambar maksimal 2 MB');
+      return null;
+    }
+
+    const path = `${user.id}/avatar`;
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (error) {
+      console.error('Gagal mengunggah avatar:', error.message);
+      toast.error('Gagal mengunggah avatar');
+      return null;
+    }
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  return { profile, loading, saving, error, saveProfile, uploadAvatar };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { NAV_ITEMS } from "@/app/data/initial-data";
 import { useAuth } from "@/app/context/AuthContext";
 import { DueSoonTodo } from "@/app/types/todo";
@@ -118,8 +119,18 @@ export function Header({ activeTab, onOpenSidebar, dueSoon, reminderDays }: Head
             </button>
           </div>
         )}
-        <div className="w-10 h-10 rounded-full bg-gradient-avatar flex items-center justify-center text-white font-semibold text-sm max-lg:w-8 max-lg:h-8 max-lg:text-xs">
-          {meta.avatar || userInitials}
+        <div className="w-10 h-10 rounded-full bg-gradient-avatar flex items-center justify-center text-white font-semibold text-sm max-lg:w-8 max-lg:h-8 max-lg:text-xs overflow-hidden">
+          {meta.avatar?.startsWith('http') ? (
+            <Image
+              src={meta.avatar}
+              alt=""
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            (meta.avatar || userInitials)
+          )}
         </div>
       </div>
     </header>
