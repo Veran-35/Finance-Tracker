@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+import { AVATAR_PRESETS } from '@/app/data/avatar-presets';
 
 type AuthMode = 'login' | 'register';
 
-const AVATAR_PRESETS = ['🙂', '😎', '🎯', '😊', '🔥', '🌸', '⚡', '🚀'];
 
 export default function LoginPage() {
   const router = useRouter();

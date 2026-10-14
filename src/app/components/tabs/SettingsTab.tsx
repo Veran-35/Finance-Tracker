@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { CategoryModal } from "@/app/components/CategoryModal";
 import { AccountModal } from "@/app/components/AccountModal";
+import { ProfileForm } from "@/app/components/ProfileForm";
 import { UseTransactionsReturn } from "@/app/hooks/useTransactions";
+import { useProfile } from "@/app/hooks/useProfile";
 
 interface SettingsTabProps {
   txn: UseTransactionsReturn;
@@ -26,9 +28,27 @@ const ENTRIES: { key: Panel; icon: string; title: string; desc: string }[] = [
 
 export function SettingsTab({ txn }: SettingsTabProps) {
   const [open, setOpen] = useState<Panel | null>(null);
+  const { profile, loading, saving, saveProfile } = useProfile();
 
   return (
     <div className="max-w-[640px]">
+      <div className="text-[13px] font-semibold text-muted mb-2.5 uppercase tracking-[0.06em]">
+        Profil Saya
+      </div>
+      <div className="mb-6">
+        {loading ? (
+          <div className="text-xs text-muted-light bg-white border border-border rounded-xl p-4">
+            Memuat profil…
+          </div>
+        ) : profile ? (
+          <ProfileForm initial={profile} saving={saving} onSave={saveProfile} />
+        ) : (
+          <div className="text-xs text-muted-light bg-white border border-border rounded-xl p-4">
+            Profil tidak ditemukan.
+          </div>
+        )}
+      </div>
+
       <div className="text-[13px] font-semibold text-muted mb-2.5 uppercase tracking-[0.06em]">
         Data master
       </div>
