@@ -18,6 +18,7 @@ export function useProfile() {
   const [profile, setProfile] = useState<ProfileInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -30,7 +31,9 @@ export function useProfile() {
 
     if (error) {
       console.error('Gagal memuat profil:', error.message);
+      setError(error.message);
     } else if (data) {
+      setError(null);
       setProfile({
         username: data.username || '',
         avatar: data.avatar_url || '',
@@ -83,5 +86,5 @@ export function useProfile() {
     return true;
   }
 
-  return { profile, loading, saving, saveProfile };
+  return { profile, loading, saving, error, saveProfile };
 }

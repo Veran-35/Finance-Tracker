@@ -28,7 +28,7 @@ const ENTRIES: { key: Panel; icon: string; title: string; desc: string }[] = [
 
 export function SettingsTab({ txn }: SettingsTabProps) {
   const [open, setOpen] = useState<Panel | null>(null);
-  const { profile, loading, saving, saveProfile } = useProfile();
+  const { profile, loading, saving, error, saveProfile } = useProfile();
 
   return (
     <div className="max-w-[640px]">
@@ -39,6 +39,14 @@ export function SettingsTab({ txn }: SettingsTabProps) {
         {loading ? (
           <div className="text-xs text-muted-light bg-white border border-border rounded-xl p-4">
             Memuat profil…
+          </div>
+        ) : error ? (
+          <div className="text-xs text-accent bg-accent/[0.06] border border-accent/25 rounded-xl p-4 leading-relaxed">
+            Gagal memuat profil: {error}
+            <br />
+            Jika menyebut kolom <code>birth_date</code> atau <code>gender</code>, jalankan
+            dulu <code>migration_profile.sql</code> di Supabase SQL Editor lalu muat ulang
+            halaman ini.
           </div>
         ) : profile ? (
           <ProfileForm initial={profile} saving={saving} onSave={saveProfile} />
