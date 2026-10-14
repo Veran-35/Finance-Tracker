@@ -73,10 +73,13 @@ export function ProfileForm({ initial, saving, onSave, onUpload }: ProfileFormPr
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             className="hidden"
             onChange={handleFile}
           />
+          <div className="text-[11px] text-muted-lighter mt-1.5 leading-relaxed">
+            Format: JPG / PNG / WEBP / GIF · maksimal 2 MB · tampilan dipotong persegi.
+          </div>
         </div>
       </div>
 

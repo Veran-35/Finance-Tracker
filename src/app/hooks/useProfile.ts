@@ -12,6 +12,10 @@ export interface ProfileInfo {
   gender: string;
 }
 
+// SVG sengaja tidak diizinkan: berkas SVG dapat memuat skrip (risiko XSS).
+const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+
 export function useProfile() {
   const { user } = useAuth();
   const toast = useToast();
@@ -88,12 +92,12 @@ export function useProfile() {
 
   async function uploadAvatar(file: File): Promise<string | null> {
     if (!user) return null;
-    if (!file.type.startsWith('image/')) {
-      toast.error('File harus berupa gambar');
+    if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Format avatar harus JPG, PNG, WEBP, atau GIF');
       return null;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Ukuran gambar maksimal 2 MB');
+    if (file.size > AVATAR_MAX_BYTES) {
+      toast.error('Ukuran avatar maksimal 2 MB');
       return null;
     }
 
