@@ -6,6 +6,8 @@ import { useAuth } from '@/app/context/AuthContext';
 
 type AuthMode = 'login' | 'register';
 
+const AVATAR_PRESETS = ['🙂', '😎', '🎯', '😊', '🔥', '🌸', '⚡', '🚀'];
+
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading, signIn, signUp } = useAuth();
@@ -16,6 +18,10 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState('');
+  const [avatar, setAvatar] = useState('🙂');
+  const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState('');
 
   useEffect(() => {
     if (!loading && user) {
@@ -49,9 +55,34 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } else {
-      const { error } = await signUp(email, password);
+      const name = username.trim();
+      if (name.length < 3) {
+        setError('Username minimal 3 karakter');
+        setSubmitting(false);
+        return;
+      }
+      if (!birthDate) {
+        setError('Tanggal lahir wajib diisi');
+        setSubmitting(false);
+        return;
+      }
+      if (!gender) {
+        setError('Pilih jenis kelamin');
+        setSubmitting(false);
+        return;
+      }
+      const { error } = await signUp(email, password, {
+        username: name,
+        avatar,
+        birthDate,
+        gender,
+      });
       if (error) {
-        setError(error);
+        setError(
+          /duplicate|unique/i.test(error)
+            ? 'Username sudah dipakai, pilih yang lain'
+            : error
+        );
       } else {
         setSuccess('Registrasi berhasil! Cek email untuk verifikasi, atau langsung login jika email confirmation dimatikan.');
         setMode('login');
@@ -191,6 +222,69 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {mode === 'register' && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">USERNAME *</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Nama tampilan, min. 3 karakter"
+                    autoComplete="username"
+                    maxLength={24}
+                    className="w-full py-3.5 px-4 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-lighter"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">AVATAR</label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {AVATAR_PRESETS.map((em) => (
+                      <button
+                        key={em}
+                        type="button"
+                        onClick={() => setAvatar(em)}
+                        aria-label={`Pilih avatar ${em}`}
+                        className={`w-10 h-10 rounded-[10px] cursor-pointer text-lg flex items-center justify-center transition-all border-[1.5px] ${
+                          avatar === em
+                            ? 'border-accent bg-accent/10'
+                            : 'border-border bg-white hover:bg-border/40'
+                        }`}
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">TANGGAL LAHIR *</label>
+                    <input
+                      type="date"
+                      value={birthDate}
+                      onChange={(e) => setBirthDate(e.target.value)}
+                      className="w-full py-3.5 px-4 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#6B6560] mb-1.5 tracking-[0.04em]">JENIS KELAMIN *</label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full py-3.5 px-4 border-[1.5px] border-border-dark rounded-[10px] text-sm text-dark bg-white outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/10 cursor-pointer"
+                    >
+                      <option value="">Pilih…</option>
+                      <option value="laki-laki">Laki-laki</option>
+                      <option value="perempuan">Perempuan</option>
+                      <option value="lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
 
             <button
               type="submit"

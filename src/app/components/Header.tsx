@@ -22,6 +22,8 @@ export function Header({ activeTab, onOpenSidebar, dueSoon, reminderDays }: Head
   const userInitials = user?.email
     ? user.email.substring(0, 2).toUpperCase()
     : 'FT';
+  const meta = (user?.user_metadata ?? {}) as { username?: string; avatar?: string };
+  const displayName = meta.username || user?.email?.split('@')[0] || 'Pengguna';
   useEffect(() => {
     const interval = setInterval(() => setDate(new Date()), 500);
     return () => clearInterval(interval);
@@ -102,8 +104,11 @@ export function Header({ activeTab, onOpenSidebar, dueSoon, reminderDays }: Head
                 )}
               </div>
             )}
-            <div className="text-xs text-muted max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap max-lg:hidden">
-              {user.email}
+            <div
+              title={user.email}
+              className="text-xs text-muted max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap max-lg:hidden"
+            >
+              {displayName}
             </div>
             <button
               onClick={signOut}
@@ -114,7 +119,7 @@ export function Header({ activeTab, onOpenSidebar, dueSoon, reminderDays }: Head
           </div>
         )}
         <div className="w-10 h-10 rounded-full bg-gradient-avatar flex items-center justify-center text-white font-semibold text-sm max-lg:w-8 max-lg:h-8 max-lg:text-xs">
-          {userInitials}
+          {meta.avatar || userInitials}
         </div>
       </div>
     </header>
